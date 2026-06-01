@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learner Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 100px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .login-box input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin: 20px 10px;
+            width: 200px;
+        }
+        .login-box button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .main-box {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .col {
+            flex: 1;
+            min-width: 250px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 8px;
+        }
+        button.danger {
+            background: #ef4444;
+        }
+        .note-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+        .note-item:hover {
+            background: #e9ecef;
+        }
+        .chat-area {
+            background: white;
+            border-radius: 10px;
+            height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
+        .chat-msg {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        .user-msg {
+            background: #667eea;
+            color: white;
+            text-align: right;
+            margin-left: auto;
+        }
+        .bot-msg {
+            background: #e9ecef;
+            color: #333;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        .keyword-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin: 2px;
+        }
+        .notes-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <!-- 登录界面 -->
+    <div id="loginPanel" class="login-box">
+        <h1>📓 Deep Learner Hub</h1>
+        <p style="margin: 15px 0; color: #666;">深度学习笔记 + 智能问答助手</p>
+        <p style="margin: 10px 0; font-size: 12px;">
+            <span class="keyword-tag">GitHub</span>
+            <span class="keyword-tag">Cloud Base</span>
+            <span class="keyword-tag">数据挖掘</span>
+            <span class="keyword-tag">DL</span>
+            <span class="keyword-tag">mnitv</span>
+            <span class="keyword-tag">DLerV</span>
+            <span class="keyword-tag">Deep Learner</span>
+            <span class="keyword-tag">Google Auth</span>
+            <span class="keyword-tag">客户端同步</span>
+        </p>
+        <input type="text" id="username" placeholder="输入你的名字" value="深度学习er">
+        <br>
+        <button onclick="doLogin()">🚀 开始使用</button>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainPanel" class="main-box">
+        <div class="header">
+            <div class="title">🧠 Deep Learner Hub | mnitv · DLerV</div>
+            <div>
+                <span id="displayName" style="margin-right: 15px;"></span>
+                <button class="logout-btn" onclick="doLogout()">退出</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- 左侧：记录本 -->
+            <div class="col">
+                <div class="card">
+                    <h3>📝 记录本</h3>
+                    <textarea id="noteContent" placeholder="写你的深度学习笔记..."></textarea>
+                    <div>
+                        <button onclick="saveNote()">💾 保存</button>
+                        <button class="danger" onclick="deleteNote()">🗑️ 删除</button>
+                    </div>
+                    <h4 style="margin: 15px 0 10px 0;">历史笔记</h4>
+                    <div id="notesList" class="notes-list"></div>
+                </div>
+            </div>
+
+            <!-- 右侧：智能客服 -->
+            <div class="col">
+                <div class="card">
+                    <h3>🤖 智能客服</h3>
+                    <div id="chatArea" class="chat-area">
+                        <div class="chat-msg bot-msg">👋 你好！我是智能助手，可以问我任何问题：深度学习、数据挖掘、统计学、编程等~</div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="question" placeholder="随便问什么都可以..." onkeypress="if(event.key==='Enter') ask()">
+                        <button onclick="ask()">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据挖掘可视化 -->
+        <div class="card">
+            <h3>📊 数据挖掘 - 笔记统计分析</h3>
+            <canvas id="myChart" width="400" height="200"></canvas>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">最近7天笔记数量变化 | 数据挖掘 + 可视化</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let allNotes = [];
+    let currentIndex = -1;
+    let chartObj = null;
+
+    function doLogin() {
+        let name = document.getElementById('username').value.trim();
+        if (!name) name = "学习者";
+        currentUser = { id: "user_" + name, name: name };
+        document.getElementById('displayName').innerText = name + " 👋";
+        document.getElementById('loginPanel').style.display = 'none';
+        document.getElementById('mainPanel').style.display = 'block';
+        loadData();
+    }
+
+    function doLogout() {
+        currentUser = null;
+        document.getElementById('loginPanel').style.display = 'block';
+        document.getElementById('mainPanel').style.display = 'none';
+    }
+
+    function loadData() {
+        let key = 'notes_' + currentUser.id;
+        let stored = localStorage.getItem(key);
+        if (stored) {
+            allNotes = JSON.parse(stored);
+        } else {
+            allNotes = [
+                { content: '深度学习是机器学习的子集，基于神经网络。', time: Date.now() - 2*86400000 },
+                { content: 'CNN卷积神经网络：卷积层、池化层、全连接层。', time: Date.now() - 86400000 },
+                { content: '反向传播是训练神经网络的核心算法。', time: Date.now() }
+            ];
+            saveData();
+        }
+        if (allNotes.length > 0) {
+            currentIndex = 0;
+            document.getElementById('noteContent').value = allNotes[0].content;
+        }
+        refreshNotesList();
+        updateChart();
+    }
+
+    function saveData() {
+        let key = 'notes_' + currentUser.id;
+        localStorage.setItem(key, JSON.stringify(allNotes));
+    }
+
+    function saveNote() {
+        let content = document.getElementById('noteContent').value;
+        if (!content.trim()) { alert('请写点内容'); return; }
+        if (currentIndex >= 0 && allNotes[currentIndex]) {
+            allNotes[currentIndex].content = content;
+            allNotes[currentIndex].time = Date.now();
+        } else {
+            allNotes.unshift({ content: content, time: Date.now() });
+            currentIndex = 0;
+        }
+        saveData();
+        refreshNotesList();
+        updateChart();
+        alert('✅ 笔记已保存到云端');
+    }
+
+    function deleteNote() {
+        if (allNotes.length === 0) return;
+        if (confirm('删除这篇笔记？')) {
+            allNotes.splice(currentIndex, 1);
+            saveData();
+            if (allNotes.length > 0) {
+                currentIndex = 0;
+                document.getElementById('noteContent').value = allNotes[0].content;
+            } else {
+                currentIndex = -1;
+                document.getElementById('noteContent').value = '';
+            }
+            refreshNotesList();
+            updateChart();
+        }
+    }
+
+    function refreshNotesList() {
+        let container = document.getElementById('notesList');
+        container.innerHTML = '';
+        for (let i = 0; i < allNotes.length; i++) {
+            let note = allNotes[i];
+            let div = document.createElement('div');
+            div.className = 'note-item';
+            let preview = note.content.substring(0, 40) + (note.content.length > 40 ? '...' : '');
+            div.innerHTML = '<div><b>📄 笔记' + (i+1) + '</b><br>' + preview + '</div>';
+            div.onclick = (function(idx) {
+                return function() {
+                    currentIndex = idx;
+                    document.getElementById('noteContent').value = allNotes[idx].content;
+                };
+            })(i);
+            container.appendChild(div);
+        }
+    }
+
+    function ask() {
+        let input = document.getElementById('question');
+        let q = input.value.trim();
+        if (!q) return;
+        
+        let chatArea = document.getElementById('chatArea');
+        let userDiv = document.createElement('div');
+        userDiv.className = 'chat-msg user-msg';
+        userDiv.innerText = '👤 ' + q;
+        chatArea.appendChild(userDiv);
+        
+        let answer = getAnswer(q);
+        let botDiv = document.createElement('div');
+        botDiv.className = 'chat-msg bot-msg';
+        botDiv.innerText = '🤖 ' + answer;
+        chatArea.appendChild(botDiv);
+        
+        chatArea.scrollTop = chatArea.scrollHeight;
+        input.value = '';
+    }
+
+    function getAnswer(q) {
+        q = q.toLowerCase();
+        
+        // ========== 深度学习/DL 相关 ==========
+        if (q.includes('cnn') || q.includes('卷积')) return 'CNN（卷积神经网络）擅长处理图像数据，核心操作：卷积提取特征、池化降维、全连接分类。常用于人脸识别、物体检测。';
+        if (q.includes('rnn') || q.includes('循环')) return 'RNN（循环神经网络）适合序列数据，如文本、音频、时间序列。常用LSTM和GRU解决梯度消失问题。';
+        if (q.includes('反向传播') || q.includes('backprop')) return '反向传播是训练神经网络的核心算法，通过链式法则计算损失函数对每个权重的梯度，然后更新参数。';
+        if (q.includes('过拟合')) return '过拟合是模型在训练集上表现太好，但测试集差。解决方案：增加数据量、数据增强、Dropout、早停、L1/L2正则化。';
+        if (q.includes('梯度下降')) return '梯度下降是一种优化算法，沿着损失函数梯度的反方向更新参数，逐步找到最小值。常见变体：SGD、Adam、RMSprop。';
+        if (q.includes('激活函数')) return '常用激活函数：ReLU（最常用，解决梯度消失）、Sigmoid（输出0-1，用于二分类）、Tanh（输出-1到1）、Softmax（多分类）。';
+        if (q.includes('损失函数') || q.includes('loss')) return '常用损失函数：MSE（回归问题）、交叉熵（分类问题）、MAE（对异常值鲁棒）。';
+        if (q.includes('transformer')) return 'Transformer是当前最先进的深度学习架构，基于自注意力机制，用于GPT、BERT等大模型。适合自然语言处理。';
+        if (q.includes('lstm')) return 'LSTM（长短期记忆网络）是RNN的改进版，通过门控机制解决长序列的梯度消失问题，适合时间序列预测。';
+        if (q.includes('dropout')) return 'Dropout是一种正则化技术，训练时随机丢弃一部分神经元，防止过拟合，提升模型泛化能力。';
+        if (q.includes('学习率')) return '学习率控制参数更新的步长。太大会震荡不收敛，太小收敛太慢。常用学习率调度或Adam自适应学习率。';
+        if (q.includes('神经网络')) return '神经网络由输入层、隐藏层、输出层组成，通过神经元连接和激活函数实现非线性映射，是深度学习的核心架构。';
+        
+        // ========== 数据挖掘相关 ==========
+        if (q.includes('数据挖掘')) return '数据挖掘是从大量数据中发现隐藏模式的过程。常用方法：聚类（K-means）、分类（决策树）、关联规则（Apriori）、异常检测。';
+        if (q.includes('聚类')) return '聚类是无监督学习，将相似数据分组。常见算法：K-means、DBSCAN、层次聚类。用于客户分群、图像分割。';
+        if (q.includes('分类') && !q.includes('神经网络')) return '分类是监督学习，预测离散标签。常用算法：逻辑回归、决策树、随机森林、SVM、神经网络。';
+        if (q.includes('关联规则')) return '关联规则发现数据项之间的关联关系。经典案例：啤酒与尿布。常用算法：Apriori、FP-Growth。';
+        if (q.includes('决策树')) return '决策树是一种可解释的分类/回归算法，通过特征分裂构建树结构。优点：可视化、不需要特征缩放。';
+        if (q.includes('随机森林')) return '随机森林是集成学习算法，通过多棵决策树投票提高准确率，防止过拟合。';
+        if (q.includes('svm') || q.includes('支持向量机')) return 'SVM（支持向量机）通过寻找最大间隔超平面进行分类，适合小样本高维数据，核函数可处理非线性问题。';
+        
+        // ========== 编程/工具相关 ==========
+        if (q.includes('python') && (q.includes('库') || q.includes('package'))) return '常用深度学习库：PyTorch（灵活）、TensorFlow（生产部署）、Keras（简单易用）、JAX（高性能）。';
+        if (q.includes('pytorch')) return 'PyTorch是Facebook开发的深度学习框架，动态计算图，适合研究和快速原型开发。';
+        if (q.includes('tensorflow')) return 'TensorFlow是Google开发的深度学习框架，支持静态图和动态图，适合大规模生产部署。';
+        if (q.includes('pandas')) return 'Pandas是Python数据分析库，提供DataFrame数据结构，用于数据清洗、转换、聚合。';
+        if (q.includes('numpy')) return 'NumPy是Python数值计算基础库，提供多维数组和矩阵运算，是Pandas、PyTorch的基础。';
+        if (q.includes('matplotlib')) return 'Matplotlib是Python可视化库，可以画折线图、散点图、柱状图、热力图等。';
+        if (q.includes('sklearn') || q.includes('scikit-learn')) return 'Scikit-learn是Python机器学习库，包含分类、回归、聚类、降维等经典算法。';
+        
+        // ========== 统计学相关 ==========
+        if (q.includes('p值') || q.includes('p值')) return 'P值是假设检验中，在原假设成立下，观察到当前结果或更极端结果的概率。P < 0.05通常认为显著。';
+        if (q.includes('t检验')) return 'T检验用于比较两组均值是否有显著差异。包括单样本t检验、独立样本t检验、配对t检验。';
+        if (q.includes('方差分析') || q.includes('anova')) return 'ANOVA（方差分析）用于比较三个及以上组的均值差异。常见：单因素ANOVA、双因素ANOVA。';
+        if (q.includes('回归分析')) return '回归分析研究变量间的关系。线性回归、逻辑回归、岭回归、Lasso回归。用于预测和推断。';
+        if (q.includes('正态分布')) return '正态分布是钟形曲线，均值=中位数=众数。很多统计方法假设数据正态分布。中心极限定理说样本均值趋向正态。';
+        if (q.includes('置信区间')) return '置信区间是总体参数可能落入的范围。例如95%置信区间表示重复抽样100次，95次包含真实值。';
+        if (q.includes('贝叶斯')) return '贝叶斯统计利用先验知识更新后验概率。公式：P(A|B)=P(B|A)P(A)/P(B)。用于朴素贝叶斯分类。';
+        if (q.includes('相关系数')) return '相关系数衡量两个变量的线性关系。皮尔逊相关系数（-1到1），绝对值越大相关性越强。';
+        if (q.includes('假设检验')) return '假设检验是先提出原假设，然后通过样本数据判断是否拒绝原假设。包括t检验、卡方检验、F检验等。';
+        if (q.includes('卡方检验')) return '卡方检验用于检验两个分类变量是否独立，或者实际分布与理论分布是否有显著差异。';
+        
+        // ========== 通用知识问答 ==========
+        if (q.includes('你好') || q.includes('您好')) return '你好！我是智能助手，可以问深度学习、数据挖掘、统计学、编程等问题。';
+        if (q.includes('谢谢') || q.includes('感谢')) return '不客气！有问题随时问我~';
+        if (q.includes('你是谁') || q.includes('你叫什么')) return '我是Deep Learner Hub智能助手，可以帮你解答深度学习、数据挖掘、统计学相关问题。';
+        if (q.includes('天气') || q.includes('温度')) return '我是知识问答助手，无法查询实时天气。建议打开天气App或网站查看~';
+        if (q.includes('时间') || q.includes('几点')) return '请查看你的设备时间哦！我是离线助手，无法获取实时时间。';
+        if (q.includes('笑话')) return '🤖 问：为什么神经网络不谈恋爱？答：因为它总在过拟合，忘不了前任！';
+        if (q.includes('帮助') || q.includes('help')) return '你可以问我：CNN、RNN、反向传播、过拟合、数据挖掘、聚类、P值、t检验、Python、PyTorch等问题！';
+        if (q.includes('可以问什么') || q.includes('能问什么')) return '我可以回答：深度学习（CNN、RNN、Transformer）、数据挖掘（聚类、分类）、统计学（P值、回归分析）、编程（Python、PyTorch）。随便问！';
+        
+        // ========== 默认回答 ==========
+        return '🤖 我可以回答：深度学习（CNN、RNN、Transformer）、数据挖掘（聚类、分类）、统计学（P值、回归分析）、编程（Python、PyTorch）。换个具体问题试试？';
+    }
+
+    function updateChart() {
+        let now = Date.now();
+        let day = 86400000;
+        let labels = [];
+        let counts = [];
+        for (let i = 6; i >= 0; i--) {
+            let start = now - i * day;
+            let d = new Date(start).toLocaleDateString();
+            labels.push(d);
+            let cnt = 0;
+            for (let note of allNotes) {
+                if (note.time >= start && note.time < start + day) cnt++;
+            }
+            counts.push(cnt);
+        }
+        let ctx = document.getElementById('myChart').getContext('2d');
+        if (chartObj) chartObj.destroy();
+        chartObj = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: '笔记数量', data: counts, backgroundColor: '#667eea' }] }
+        });
+    }
+</script>
+</body>
+</html>
