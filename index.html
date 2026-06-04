@@ -1,1096 +1,931 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Learner Hub</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Learner Hub</title>
+<style>
+:root {
+    --sidebar-w: 230px;
+    --bg: #0c0c1a;
+    --card: #16162a;
+    --card-hover: #1e1e38;
+    --surface: #1a1a30;
+    --border: #2a2a44;
+    --text: #e0e0f0;
+    --text2: #8888aa;
+    --primary: #8b5cf6;
+    --primary-glow: rgba(139,92,246,0.3);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --info: #3b82f6;
+    --radius: 12px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg);color:var(--text);letter-spacing:.3px;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#3a3a55;border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:#4a4a65;}
 
-        /* ====== 登录界面 ====== */
-        .login-box {
-            background: white; border-radius: 20px; padding: 40px;
-            text-align: center; margin-top: 80px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .login-box input {
-            padding: 12px 20px; font-size: 16px; border: 1px solid #ddd;
-            border-radius: 10px; margin: 20px 10px; width: 220px;
-        }
-        .login-box button {
-            background: #667eea; color: white; border: none; padding: 12px 30px;
-            border-radius: 10px; cursor: pointer; font-size: 16px;
-        }
-        .login-box button:hover { opacity: 0.9; }
+/* Login */
+.login-overlay{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#0f0f2e 0%,#1a0a2e 50%,#0f0f2e 100%);z-index:999;
+}
+.login-card{
+    background:var(--card);border-radius:20px;padding:48px 40px;text-align:center;
+    width:400px;max-width:90vw;box-shadow:0 0 60px rgba(139,92,246,0.2);border:1px solid var(--border);
+}
+.login-card h1{font-size:26px;margin-bottom:8px;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-card p{color:var(--text2);margin-bottom:24px;font-size:14px;}
+.login-card input{
+    width:100%;padding:14px 16px;font-size:16px;border:1px solid var(--border);border-radius:12px;
+    margin-bottom:20px;outline:none;transition:.2s;background:var(--surface);color:var(--text);
+}
+.login-card input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow);}
+.btn-login{
+    width:100%;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;border:none;
+    padding:14px;border-radius:12px;cursor:pointer;font-size:16px;font-weight:600;transition:.2s;
+}
+.btn-login:hover{box-shadow:0 0 25px rgba(139,92,246,0.4);transform:translateY(-1px);}
+.login-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0;}
 
-        /* ====== 主界面 ====== */
-        .main-box {
-            display: none; background: white; border-radius: 20px;
-            padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 15px; border-bottom: 2px solid #eee; margin-bottom: 15px;
-            flex-wrap: wrap; gap: 10px;
-        }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .title { font-size: 22px; font-weight: bold; color: #667eea; }
-        .logout-btn {
-            background: #ef4444; color: white; border: none; padding: 8px 16px;
-            border-radius: 8px; cursor: pointer;
-        }
-        .logout-btn:hover { opacity: 0.9; }
+/* App Shell */
+.app-shell{display:none;height:100vh;}
+.app-shell.active{display:flex;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9;}
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:11;width:38px;height:38px;border-radius:10px;background:var(--card);border:1px solid var(--border);cursor:pointer;font-size:20px;box-shadow:var(--shadow);align-items:center;justify-content:center;color:var(--text);}
 
-        /* ====== Tab 导航 ====== */
-        .tab-nav {
-            display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 20px;
-            border-bottom: 2px solid #eee; padding-bottom: 2px;
-        }
-        .tab-btn {
-            padding: 10px 18px; border: none; background: transparent;
-            cursor: pointer; font-size: 14px; border-radius: 10px 10px 0 0;
-            color: #666; transition: all 0.2s;
-        }
-        .tab-btn:hover { background: #f0f0f0; color: #333; }
-        .tab-btn.active { background: #667eea; color: white; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
+/* Sidebar */
+.sidebar{
+    width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--card);
+    border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10;
+    transition:transform .3s,width .3s;
+}
+.sidebar-brand{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sidebar-brand .logo{font-size:22px;}
+.sidebar-brand .name{font-weight:700;font-size:15px;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sidebar-user{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:13px;}
+.sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+.sidebar-user .lv{font-size:10px;color:var(--warn);margin-left:4px;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 10px;}
+.nav-section{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#555;padding:12px 12px 6px;font-weight:600;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#aaa;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit;}
+.nav-item:hover{background:var(--card-hover);color:#ddd;}
+.nav-item.active{background:rgba(139,92,246,0.15);color:#a78bfa;font-weight:600;box-shadow:inset 3px 0 0 #8b5cf6;}
+.nav-item .nav-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0;}
+.nav-item .nav-badge{margin-left:auto;background:#2a2a44;color:#888;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.nav-item.active .nav-badge{background:rgba(139,92,246,0.3);color:#a78bfa;}
+.sidebar-footer{padding:12px 20px;border-top:1px solid var(--border);}
+.sidebar-footer button{width:100%;padding:10px;border-radius:8px;border:1px solid #3a1a1a;background:transparent;color:#f87171;cursor:pointer;font-size:13px;transition:.15s;font-family:inherit;}
+.sidebar-footer button:hover{background:rgba(239,68,68,0.1);}
 
-        /* ====== 通用组件 ====== */
-        .row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .col { flex: 1; min-width: 260px; }
-        .col-half { flex: 0 0 calc(50% - 10px); min-width: 260px; }
-        .card {
-            background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px;
-        }
-        .card h3 { margin-bottom: 12px; color: #333; font-size: 16px; }
-        .card input[type="text"], .card textarea, .card select {
-            width: 100%; padding: 10px; border: 1px solid #ddd;
-            border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 8px;
-        }
-        .card textarea { height: 130px; resize: vertical; }
-        button {
-            background: #667eea; color: white; border: none; padding: 8px 16px;
-            border-radius: 8px; cursor: pointer; margin-top: 6px; margin-right: 6px;
-            font-size: 13px; transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.85; }
-        button.danger { background: #ef4444; }
-        button.success { background: #10b981; }
-        button.warn { background: #f59e0b; }
-        button.small { padding: 5px 10px; font-size: 11px; margin-top: 2px; }
-        .notes-list, .snippet-list, .resource-list {
-            max-height: 220px; overflow-y: auto;
-        }
-        .list-item {
-            background: white; padding: 10px 12px; border-radius: 8px;
-            margin-bottom: 6px; cursor: pointer; border: 1px solid #eee;
-            font-size: 13px; transition: background 0.15s;
-        }
-        .list-item:hover { background: #e9ecef; }
-        .list-item .item-title { font-weight: bold; margin-bottom: 3px; }
-        .list-item .item-preview { color: #666; font-size: 12px; }
-        .list-item .item-meta { font-size: 11px; color: #999; margin-top: 3px; }
-        .keyword-tag {
-            display: inline-block; background: #667eea; color: white;
-            padding: 2px 8px; border-radius: 12px; font-size: 10px; margin: 2px;
-        }
+/* Content Area */
+.content-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 28px 40px;background:var(--bg);}
+.page-header{margin-bottom:20px;}
+.page-title{font-size:22px;font-weight:700;color:#fff;}
+.page-desc{font-size:13px;color:var(--text2);margin-top:4px;}
 
-        /* ====== 聊天区 ====== */
-        .chat-area {
-            background: white; border-radius: 10px; height: 280px; overflow-y: auto;
-            padding: 10px; margin-bottom: 10px; border: 1px solid #ddd;
-        }
-        .chat-msg {
-            margin-bottom: 10px; padding: 8px 12px; border-radius: 10px;
-            max-width: 85%; word-wrap: break-word; font-size: 13px;
-        }
-        .user-msg { background: #667eea; color: white; text-align: right; margin-left: auto; }
-        .bot-msg { background: #e9ecef; color: #333; }
-        .chat-input { display: flex; gap: 10px; }
-        .chat-input input {
-            flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px;
-        }
+/* Cards */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px;border:1px solid var(--border);}
+.card h3{font-size:15px;color:#ddd;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-row{display:flex;gap:18px;flex-wrap:wrap;}
+.card-col{flex:1;min-width:280px;}
 
-        /* ====== 看板 ====== */
-        .kanban-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .kanban-col {
-            flex: 1; min-width: 200px; background: #fff; border-radius: 12px;
-            padding: 12px; border: 2px dashed #ddd;
-        }
-        .kanban-col h4 { text-align: center; margin-bottom: 10px; color: #555; font-size: 14px; }
-        .kanban-task {
-            background: #f0f4ff; padding: 10px; border-radius: 8px; margin-bottom: 8px;
-            cursor: grab; font-size: 13px; display: flex; justify-content: space-between;
-            align-items: center; border-left: 3px solid #667eea;
-        }
-        .kanban-task.done { opacity: 0.6; text-decoration: line-through; border-left-color: #10b981; }
-        .kanban-task .task-actions { display: flex; gap: 4px; }
-        .kanban-task .task-actions button { padding: 3px 6px; font-size: 10px; margin: 0; }
+/* Inputs */
+input[type="text"],input[type="number"],textarea,select{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:13px;outline:none;transition:.15s;background:var(--surface);color:var(--text);font-family:inherit;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow);}
+textarea{resize:vertical;min-height:100px;}
+input[type="range"]{width:100%;accent-color:var(--primary);}
 
-        /* ====== 番茄钟 ====== */
-        .timer-display {
-            text-align: center; padding: 25px;
-        }
-        .timer-circle {
-            width: 160px; height: 160px; border-radius: 50%; border: 8px solid #667eea;
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
-            font-size: 36px; font-weight: bold; color: #333; font-family: monospace;
-            transition: border-color 0.3s;
-        }
-        .timer-circle.break { border-color: #10b981; }
-        .timer-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .timer-stats { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
-        .timer-stat {
-            text-align: center; padding: 10px 15px; background: white; border-radius: 10px;
-        }
-        .timer-stat .num { font-size: 24px; font-weight: bold; color: #667eea; }
-        .timer-stat .label { font-size: 11px; color: #999; }
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;border:none;transition:all .15s;font-family:inherit;}
+.btn-primary{background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;}
+.btn-primary:hover{box-shadow:0 0 15px var(--primary-glow);}
+.btn-success{background:#10b981;color:white;}
+.btn-success:hover{background:#059669;}
+.btn-danger{background:#ef4444;color:white;}
+.btn-danger:hover{background:#dc2626;}
+.btn-warn{background:#f59e0b;color:#111;}
+.btn-warn:hover{background:#d97706;}
+.btn-outline{background:transparent;color:#aaa;border:1px solid var(--border);}
+.btn-outline:hover{background:var(--card-hover);color:#ddd;}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 
-        /* ====== 代码运行输出 ====== */
-        .code-output {
-            background: #1e1e1e; color: #4ec9b0; padding: 10px 12px; border-radius: 8px;
-            font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;
-            min-height: 60px; max-height: 200px; overflow-y: auto;
-            white-space: pre-wrap; word-break: break-all; margin-top: 8px;
-            display: none;
-        }
-        .code-output.show { display: block; }
-        .code-output .output-label { color: #888; margin-bottom: 4px; }
-        .code-output .output-error { color: #f44747; }
-        .code-output .output-loading { color: #dcdcaa; font-style: italic; }
+/* Tags */
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;}
+.tag-primary{background:rgba(139,92,246,0.2);color:#a78bfa;}
+.tag-green{background:rgba(16,185,129,0.2);color:#34d399;}
+.tag-orange{background:rgba(245,158,11,0.2);color:#fbbf24;}
+.tag-red{background:rgba(239,68,68,0.2);color:#f87171;}
+.tag-gray{background:rgba(100,100,130,0.2);color:#999;}
 
-        /* ====== 代码片段 ====== */
-        .code-preview {
-            background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px;
-            font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;
-            white-space: pre-wrap; max-height: 120px; overflow-y: auto; margin: 5px 0;
-        }
-        .lang-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 10px;
-            font-size: 10px; font-weight: bold; margin-right: 4px;
-        }
-        .lang-py { background: #3776ab; color: white; }
-        .lang-js { background: #f7df1e; color: #333; }
-        .lang-other { background: #6b7280; color: white; }
+/* List */
+.list-scroll{max-height:50vh;overflow-y:auto;padding-right:4px;}
+.list-item{
+    background:var(--surface);padding:12px 14px;border-radius:8px;margin-bottom:6px;
+    cursor:pointer;border:1px solid var(--border);font-size:13px;transition:all .15s;
+}
+.list-item:hover{background:var(--card-hover);border-color:#4a4a66;}
+.list-item .item-title{font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.list-item .item-preview{color:var(--text2);font-size:12px;margin-bottom:2px;}
+.list-item .item-meta{font-size:11px;color:#666;display:flex;align-items:center;justify-content:space-between;}
+.empty-state{text-align:center;padding:32px 20px;color:#555;font-size:13px;}
+.empty-state .empty-icon{font-size:36px;margin-bottom:8px;}
 
-        /* ====== 统计卡片 ====== */
-        .stats-cards { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-        .stat-card {
-            flex: 1; min-width: 140px; background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white; border-radius: 12px; padding: 15px; text-align: center;
-        }
-        .stat-card .stat-num { font-size: 28px; font-weight: bold; }
-        .stat-card .stat-label { font-size: 12px; opacity: 0.85; margin-top: 4px; }
-        .stat-card.green { background: linear-gradient(135deg, #10b981, #059669); }
-        .stat-card.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .stat-card.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+/* Code */
+.code-preview{
+    background:#0a0a16;color:#c8c8d4;padding:10px 12px;border-radius:6px;
+    font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;
+    white-space:pre-wrap;max-height:80px;overflow-y:auto;margin:4px 0;line-height:1.4;border:1px solid #1a1a30;
+}
+.code-output{
+    background:#0a0a16;color:#4ec9b0;padding:10px 12px;border-radius:8px;
+    font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12px;
+    min-height:48px;max-height:200px;overflow-y:auto;
+    white-space:pre-wrap;word-break:break-all;margin-top:8px;display:none;line-height:1.5;border:1px solid #1a1a30;
+}
+.code-output.show{display:block;}
+.lang-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.lang-py{background:#3776ab;color:white;}
+.lang-js{background:#f7df1e;color:#333;}
+.lang-other{background:#6b7280;color:white;}
 
-        /* ====== 响应式 ====== */
-        @media (max-width: 768px) {
-            .row { flex-direction: column; }
-            .col-half { flex: 1 1 100%; }
-            .kanban-row { flex-direction: column; }
-            .tab-btn { padding: 8px 10px; font-size: 12px; }
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt-stdlib.js"></script>
+/* Kanban */
+.kanban-grid{display:flex;gap:14px;flex-wrap:wrap;}
+.kanban-col{flex:1;min-width:210px;background:var(--surface);border-radius:10px;padding:14px;border:2px dashed var(--border);}
+.kanban-col h4{text-align:center;margin-bottom:10px;font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px;}
+.col-count{width:22px;height:22px;border-radius:50%;background:var(--border);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text2);}
+.kanban-task{background:var(--card);padding:10px 12px;border-radius:8px;margin-bottom:8px;cursor:grab;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid var(--primary);gap:6px;}
+.kanban-task.done{opacity:.5;text-decoration:line-through;border-left-color:var(--success);}
+.kanban-task .ta{display:flex;gap:3px;flex-shrink:0;}
+.kanban-task .ta button{padding:3px 6px;font-size:10px;line-height:1;}
+
+/* Timer */
+.timer-ring{width:150px;height:150px;border-radius:50%;border:6px solid var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;font-weight:700;color:#fff;font-feature-settings:"tnum";letter-spacing:2px;box-shadow:0 0 30px var(--primary-glow);transition:border-color .3s,box-shadow .3s;}
+.timer-ring.break{border-color:var(--success);box-shadow:0 0 30px rgba(16,185,129,0.3);}
+.timer-settings{display:flex;gap:20px;justify-content:center;margin:10px 0;font-size:12px;color:var(--text2);}
+.timer-settings label{display:flex;align-items:center;gap:6px;}
+.timer-settings input[type="number"]{width:60px;padding:6px 8px;text-align:center;}
+.timer-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.tstat{text-align:center;padding:10px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);}
+.tstat .num{font-size:22px;font-weight:700;color:#a78bfa;}
+.tstat .label{font-size:11px;color:var(--text2);}
+
+/* Reward / Level */
+.level-bar{height:8px;background:#2a2a44;border-radius:4px;overflow:hidden;margin:8px 0;}
+.level-bar-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:4px;transition:width .5s;}
+.xp-text{font-size:11px;color:#fbbf24;text-align:right;}
+.badge-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+.badge-item{width:60px;height:60px;border-radius:12px;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;position:relative;transition:.2s;}
+.badge-item.earned{border-color:#f59e0b;box-shadow:0 0 10px rgba(245,158,11,0.3);}
+.badge-item.locked{opacity:.3;filter:grayscale(1);}
+.badge-item .badge-tip{position:absolute;bottom:-18px;font-size:9px;color:var(--text2);white-space:nowrap;}
+.reward-log{max-height:150px;overflow-y:auto;font-size:12px;color:var(--text2);}
+
+/* Daily Goal */
+.goal-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.goal-item .goal-bar{flex:1;height:8px;background:#2a2a44;border-radius:4px;overflow:hidden;}
+.goal-item .goal-fill{height:100%;background:var(--primary);border-radius:4px;transition:width .5s;}
+.goal-item .goal-label{font-size:12px;min-width:80px;color:var(--text2);}
+.goal-item .goal-num{font-size:12px;color:#a78bfa;min-width:30px;text-align:right;}
+
+/* Flashcard */
+.flashcard{perspective:1000px;width:320px;height:200px;margin:20px auto;cursor:pointer;}
+.flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+.flashcard-front,.flashcard-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:20px;font-size:16px;text-align:center;border:1px solid var(--border);}
+.flashcard-front{background:linear-gradient(135deg,#1a1a3e,#2a2a4e);color:#fff;}
+.flashcard-back{background:linear-gradient(135deg,#1a2a1a,#2a3a2a);color:#d4fcd4;transform:rotateY(180deg);}
+.card-nav{display:flex;gap:10px;justify-content:center;margin-top:10px;}
+.card-counter{text-align:center;font-size:12px;color:var(--text2);margin-top:8px;}
+
+/* Relax */
+.relax-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.relax-card{
+    background:var(--card);border-radius:var(--radius);padding:20px;
+    text-align:center;border:1px solid var(--border);transition:.2s;
+}
+.relax-card:hover{border-color:#4a4a66;}
+.breath-circle{
+    width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#6366f1);
+    margin:15px auto;transition:all 4s ease-in-out;box-shadow:0 0 30px rgba(139,92,246,0.4);
+}
+.breath-circle.inhale{transform:scale(1.6);box-shadow:0 0 50px rgba(139,92,246,0.6);}
+.breath-text{font-size:16px;color:#a78bfa;margin-top:8px;min-height:24px;}
+.xhs-container{width:100%;height:420px;border-radius:10px;overflow:hidden;background:#0a0a16;border:1px solid var(--border);position:relative;}
+.xhs-container iframe{width:100%;height:100%;border:none;}
+.xhs-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#555;}
+.xhs-fallback button{margin-top:10px;}
+
+/* Stats */
+.stats-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.stat-card{flex:1;min-width:130px;border-radius:12px;padding:18px;color:white;text-align:center;}
+.stat-card.purple{background:linear-gradient(135deg,#7c3aed,#6366f1);}
+.stat-card.green{background:linear-gradient(135deg,#10b981,#059669);}
+.stat-card.orange{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.stat-card.red{background:linear-gradient(135deg,#ef4444,#dc2626);}
+.stat-card.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);}
+.stat-card .sn{font-size:30px;font-weight:800;}
+.stat-card .sl{font-size:12px;opacity:.85;margin-top:2px;}
+
+/* Chat */
+.chat-box{background:var(--surface);border-radius:10px;height:280px;overflow-y:auto;padding:12px;margin-bottom:10px;border:1px solid var(--border);}
+.chat-msg{margin-bottom:10px;padding:8px 12px;border-radius:10px;max-width:85%;word-wrap:break-word;font-size:13px;}
+.chat-msg.user{background:var(--primary);color:white;margin-left:auto;}
+.chat-msg.bot{background:var(--card-hover);color:#ccc;}
+.chat-row{display:flex;gap:8px;}
+.chat-row input{flex:1;}
+
+/* Page Panel */
+.page-panel{display:none;animation:fadeIn .25s ease;}
+.page-panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--card);color:#a78bfa;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;border:1px solid var(--primary);animation:toastIn .4s ease,toastOut .4s ease 1.6s forwards;box-shadow:0 0 20px rgba(139,92,246,0.3);}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;}}
+
+@media(max-width:768px){
+    .sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);box-shadow:4px 0 20px rgba(0,0,0,0.4);}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-overlay.show{display:block;}
+    .menu-toggle{display:flex;}
+    .content-area{padding:16px 12px 24px;}
+    .card-row{flex-direction:column;}
+    .kanban-grid{flex-direction:column;}
+    .flashcard{width:260px;height:170px;}
+    .xhs-container{height:300px;}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt-stdlib.js"></script>
 </head>
 <body>
-<div class="container">
-    <!-- ==================== 登录界面 ==================== -->
-    <div id="loginPanel" class="login-box">
-        <h1>📓 Deep Learner Hub</h1>
-        <p style="margin: 15px 0; color: #666;">深度学习笔记 + 智能问答 + 学习管理</p>
-        <p style="margin: 10px 0; font-size: 12px;">
-            <span class="keyword-tag">GitHub</span>
-            <span class="keyword-tag">Cloud Base</span>
-            <span class="keyword-tag">数据挖掘</span>
-            <span class="keyword-tag">DL</span>
-            <span class="keyword-tag">mnitv</span>
-            <span class="keyword-tag">DLerV</span>
-            <span class="keyword-tag">Deep Learner</span>
-            <span class="keyword-tag">Google Auth</span>
-            <span class="keyword-tag">客户端同步</span>
-            <span class="keyword-tag">看板</span>
-            <span class="keyword-tag">番茄钟</span>
-        </p>
+
+<!-- Login -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <h1>🧠 Deep Learner Hub</h1>
+        <p>深度学习笔记 · 智能问答 · 高效学习管理</p>
+        <div class="login-tags">
+            <span class="tag tag-primary">GitHub</span>
+            <span class="tag tag-green">Cloud Base</span>
+            <span class="tag tag-orange">数据挖掘</span>
+            <span class="tag tag-red">DL</span>
+            <span class="tag tag-gray">mnitv</span>
+            <span class="tag tag-primary">DLerV</span>
+        </div>
         <input type="text" id="username" placeholder="输入你的名字" value="深度学习er">
-        <br>
-        <button onclick="doLogin()">🚀 开始使用</button>
-    </div>
-
-    <!-- ==================== 主界面 ==================== -->
-    <div id="mainPanel" class="main-box">
-        <!-- 顶部 Header -->
-        <div class="header">
-            <div class="header-left">
-                <div class="title">🧠 Deep Learner Hub | mnitv · DLerV</div>
-            </div>
-            <div>
-                <span id="displayName" style="margin-right: 15px;"></span>
-                <button class="logout-btn" onclick="doLogout()">退出</button>
-            </div>
-        </div>
-
-        <!-- Tab 导航 -->
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('notes')">📝 笔记管理</button>
-            <button class="tab-btn" onclick="switchTab('kanban')">📋 学习看板</button>
-            <button class="tab-btn" onclick="switchTab('snippets')">💻 代码片段</button>
-            <button class="tab-btn" onclick="switchTab('pomodoro')">⏱️ 专注计时</button>
-            <button class="tab-btn" onclick="switchTab('resources')">📚 知识资源</button>
-            <button class="tab-btn" onclick="switchTab('stats')">📊 数据统计</button>
-        </div>
-
-        <!-- ==================== Tab 1: 笔记管理 ==================== -->
-        <div id="panel-notes" class="tab-panel active">
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <h3>📝 记录本</h3>
-                        <input type="text" id="noteTitle" placeholder="笔记标题（可选）" style="font-family:Arial;font-size:14px;">
-                        <textarea id="noteContent" placeholder="写你的深度学习笔记..."></textarea>
-                        <div>
-                            <button onclick="saveNote()">💾 保存</button>
-                            <button class="danger" onclick="deleteNote()">🗑️ 删除</button>
-                            <button class="success" onclick="newNote()">➕ 新建</button>
-                        </div>
-                        <h4 style="margin: 15px 0 10px 0;">📂 历史笔记</h4>
-                        <div id="notesList" class="notes-list"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <h3>🤖 智能客服</h3>
-                        <div id="chatArea" class="chat-area">
-                            <div class="chat-msg bot-msg">👋 你好！我是智能助手，可以问我任何问题：深度学习、数据挖掘、统计学、编程等~</div>
-                        </div>
-                        <div class="chat-input">
-                            <input type="text" id="question" placeholder="随便问什么都可以..." onkeypress="if(event.key==='Enter') ask()">
-                            <button onclick="ask()">发送</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== Tab 2: 学习看板 ==================== -->
-        <div id="panel-kanban" class="tab-panel">
-            <div class="card">
-                <h3>📋 学习任务看板</h3>
-                <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
-                    <input type="text" id="newTaskInput" placeholder="添加新任务..." style="flex:1;min-width:200px;padding:10px;border:1px solid #ddd;border-radius:10px;">
-                    <button onclick="addTask()">➕ 添加任务</button>
-                </div>
-                <div class="kanban-row">
-                    <div class="kanban-col">
-                        <h4>📌 待办 (<span id="todoCount">0</span>)</h4>
-                        <div id="todoList"></div>
-                    </div>
-                    <div class="kanban-col">
-                        <h4>🔄 进行中 (<span id="doingCount">0</span>)</h4>
-                        <div id="doingList"></div>
-                    </div>
-                    <div class="kanban-col">
-                        <h4>✅ 已完成 (<span id="doneCount">0</span>)</h4>
-                        <div id="doneList"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== Tab 3: 代码片段 ==================== -->
-        <div id="panel-snippets" class="tab-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <h3>💻 新建代码片段</h3>
-                        <input type="text" id="snippetTitle" placeholder="代码片段名称（如：CNN模型定义）" style="font-family:Arial;">
-                        <select id="snippetLang" style="padding:10px;border:1px solid #ddd;border-radius:10px;">
-                            <option value="python">Python</option>
-                            <option value="javascript">JavaScript</option>
-                            <option value="other">其他</option>
-                        </select>
-                        <textarea id="snippetCode" placeholder="写代码...&#10;&#10;Python 示例：&#10;for i in range(5):&#10;    print(f'Epoch {i+1}: loss={0.1*(5-i):.2f}')&#10;&#10;JS 示例：&#10;console.log('Hello!');"></textarea>
-                        <div>
-                            <button onclick="saveSnippet()">💾 保存片段</button>
-                            <button class="success" onclick="runSnippet()">▶ 运行</button>
-                            <button class="danger" onclick="deleteSnippet()">🗑️ 删除选中</button>
-                        </div>
-                        <div id="codeOutput" class="code-output"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <h3>📂 代码片段库</h3>
-                        <div id="snippetsList" class="snippet-list" style="max-height:350px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== Tab 4: 番茄钟 ==================== -->
-        <div id="panel-pomodoro" class="tab-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <h3>⏱️ 番茄钟</h3>
-                        <div class="timer-display">
-                            <div class="timer-circle" id="timerCircle">
-                                <span id="timerText">25:00</span>
-                            </div>
-                            <div>
-                                <button onclick="setTimerMode('work')" id="btnWork" class="success">🍅 工作 25分钟</button>
-                                <button onclick="setTimerMode('break')" id="btnBreak" class="warn">☕ 休息 5分钟</button>
-                            </div>
-                            <div class="timer-controls" style="margin-top: 12px;">
-                                <button onclick="startTimer()" id="btnStart" class="success">▶ 开始</button>
-                                <button onclick="pauseTimer()" id="btnPause" class="warn" style="display:none;">⏸ 暂停</button>
-                                <button onclick="resetTimer()" class="danger">🔄 重置</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <h3>📈 今日统计</h3>
-                        <div class="timer-stats">
-                            <div class="timer-stat">
-                                <div class="num" id="pomoCount">0</div>
-                                <div class="label">完成番茄数</div>
-                            </div>
-                            <div class="timer-stat">
-                                <div class="num" id="studyMinutes">0</div>
-                                <div class="label">专注分钟</div>
-                            </div>
-                            <div class="timer-stat">
-                                <div class="num" id="streakDays">0</div>
-                                <div class="label">连续学习天数</div>
-                            </div>
-                        </div>
-                        <h4 style="margin-top:15px;">📋 今日记录</h4>
-                        <div id="pomoLog" style="max-height:150px;overflow-y:auto;font-size:12px;color:#666;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== Tab 5: 知识资源 ==================== -->
-        <div id="panel-resources" class="tab-panel">
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <h3>🔗 添加学习资源</h3>
-                        <input type="text" id="resTitle" placeholder="资源名称（如：吴恩达深度学习课程）" style="font-family:Arial;">
-                        <input type="text" id="resUrl" placeholder="资源链接（如：https://...）" style="font-family:Arial;">
-                        <select id="resCategory" style="padding:10px;border:1px solid #ddd;border-radius:10px;margin-bottom:8px;">
-                            <option value="课程">📖 课程</option>
-                            <option value="论文">📄 论文</option>
-                            <option value="教程">📝 教程</option>
-                            <option value="工具">🛠️ 工具</option>
-                            <option value="数据集">📊 数据集</option>
-                            <option value="其他">📌 其他</option>
-                        </select>
-                        <div>
-                            <button onclick="saveResource()">💾 收藏资源</button>
-                            <button class="danger" onclick="deleteResource()">🗑️ 删除选中</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <h3>📚 资源收藏夹</h3>
-                        <div style="margin-bottom:10px;display:flex;gap:4px;flex-wrap:wrap;" id="resFilter">
-                            <button class="small" onclick="filterResources('全部')">全部</button>
-                            <button class="small" onclick="filterResources('课程')">📖 课程</button>
-                            <button class="small" onclick="filterResources('论文')">📄 论文</button>
-                            <button class="small" onclick="filterResources('教程')">📝 教程</button>
-                            <button class="small" onclick="filterResources('工具')">🛠️ 工具</button>
-                            <button class="small" onclick="filterResources('数据集')">📊 数据集</button>
-                        </div>
-                        <div id="resourcesList" class="resource-list" style="max-height:280px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== Tab 6: 数据统计 ==================== -->
-        <div id="panel-stats" class="tab-panel">
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-num" id="statTotalNotes">0</div>
-                    <div class="stat-label">📝 总笔记数</div>
-                </div>
-                <div class="stat-card green">
-                    <div class="stat-num" id="statTotalTasks">0</div>
-                    <div class="stat-label">📋 总任务数</div>
-                </div>
-                <div class="stat-card orange">
-                    <div class="stat-num" id="statTotalSnippets">0</div>
-                    <div class="stat-label">💻 代码片段</div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-num" id="statTotalResources">0</div>
-                    <div class="stat-label">📚 资源收藏</div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-half">
-                    <div class="card">
-                        <h3>📊 笔记数量趋势（近7天）</h3>
-                        <canvas id="myChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-                <div class="col-half">
-                    <div class="card">
-                        <h3>📈 学习任务完成率</h3>
-                        <canvas id="taskChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button class="btn-login" onclick="doLogin()">🚀 开始使用</button>
     </div>
 </div>
 
+<!-- App Shell -->
+<div id="appShell" class="app-shell">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand"><span class="logo">🧠</span><span class="name">Deep Learner Hub</span></div>
+        <div class="sidebar-user">
+            <div class="avatar" id="sidebarAvatar">D</div>
+            <div><span id="sidebarUserName">学习者</span><span class="lv" id="sidebarLevel">Lv.1</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">学习工具</div>
+            <button class="nav-item active" data-page="notes" onclick="switchPage('notes',this)"><span class="nav-icon">📝</span>笔记管理<span class="nav-badge" id="badgeNotes">0</span></button>
+            <button class="nav-item" data-page="kanban" onclick="switchPage('kanban',this)"><span class="nav-icon">📋</span>学习看板<span class="nav-badge" id="badgeTasks">0</span></button>
+            <button class="nav-item" data-page="goals" onclick="switchPage('goals',this)"><span class="nav-icon">🎯</span>每日目标</button>
+            <button class="nav-item" data-page="snippets" onclick="switchPage('snippets',this)"><span class="nav-icon">💻</span>代码片段<span class="nav-badge" id="badgeSnippets">0</span></button>
+            <button class="nav-item" data-page="resources" onclick="switchPage('resources',this)"><span class="nav-icon">📚</span>知识资源<span class="nav-badge" id="badgeResources">0</span></button>
+            <button class="nav-item" data-page="flashcards" onclick="switchPage('flashcards',this)"><span class="nav-icon">🃏</span>闪卡记忆<span class="nav-badge" id="badgeCards">0</span></button>
+            <div class="nav-section">激励 & 效率</div>
+            <button class="nav-item" data-page="rewards" onclick="switchPage('rewards',this)"><span class="nav-icon">🏆</span>学习奖励</button>
+            <button class="nav-item" data-page="pomodoro" onclick="switchPage('pomodoro',this)"><span class="nav-icon">⏱️</span>专注计时</button>
+            <button class="nav-item" data-page="relax" onclick="switchPage('relax',this)"><span class="nav-icon">🌿</span>休息放松</button>
+            <div class="nav-section">数据</div>
+            <button class="nav-item" data-page="stats" onclick="switchPage('stats',this)"><span class="nav-icon">📊</span>数据统计</button>
+        </nav>
+        <div class="sidebar-footer"><button onclick="doLogout()">🚪 退出登录</button></div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content-area" id="contentArea">
+
+    <!-- Notes -->
+    <section class="page-panel active" id="page-notes">
+        <div class="page-header"><div class="page-title">📝 笔记管理</div><div class="page-desc">记录深度学习笔记与心得</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>📝 编辑笔记</h3>
+                <input type="text" id="noteTitle" placeholder="笔记标题（可选）">
+                <textarea id="noteContent" placeholder="写你的深度学习笔记..." style="min-height:180px;margin-top:8px;"></textarea>
+                <div class="btn-group"><button class="btn btn-primary" onclick="saveNote()">💾 保存</button><button class="btn btn-success" onclick="newNote()">➕ 新建</button><button class="btn btn-danger" onclick="deleteNote()">🗑️ 删除</button></div>
+            </div></div>
+            <div class="card-col">
+                <div class="card"><h3>📂 历史笔记</h3><div id="notesList" class="list-scroll"></div></div>
+                <div class="card"><h3>🤖 智能客服</h3>
+                    <div id="chatArea" class="chat-box"><div class="chat-msg bot">👋 你好！我是智能助手，可以问我任何深度学习、数据挖掘、统计学、编程问题~</div></div>
+                    <div class="chat-row"><input type="text" id="question" placeholder="随便问什么都可以..." onkeypress="if(event.key==='Enter')ask()"><button class="btn btn-primary" onclick="ask()">发送</button></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kanban -->
+    <section class="page-panel" id="page-kanban">
+        <div class="page-header"><div class="page-title">📋 学习看板</div><div class="page-desc">管理学习任务，拖拽切换状态</div></div>
+        <div class="card">
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><input type="text" id="newTaskInput" placeholder="添加新任务..." style="flex:1;min-width:200px;"><button class="btn btn-primary" onclick="addTask()">➕ 添加任务</button></div>
+            <div class="kanban-grid">
+                <div class="kanban-col"><h4>📌 待办 <span class="col-count" id="todoCount">0</span></h4><div id="todoList"></div></div>
+                <div class="kanban-col"><h4>🔄 进行中 <span class="col-count" id="doingCount">0</span></h4><div id="doingList"></div></div>
+                <div class="kanban-col"><h4>✅ 已完成 <span class="col-count" id="doneCount">0</span></h4><div id="doneList"></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Daily Goals -->
+    <section class="page-panel" id="page-goals">
+        <div class="page-header"><div class="page-title">🎯 每日目标</div><div class="page-desc">设定每日学习目标，跟踪完成进度</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>🎯 设定目标</h3>
+                <div id="goalsForm"></div>
+                <div class="btn-group"><button class="btn btn-primary" id="btnAddGoal">➕ 添加目标</button></div>
+            </div></div>
+            <div class="card-col"><div class="card">
+                <h3>📈 今日进度</h3>
+                <div id="goalsList"><div class="empty-state"><div class="empty-icon">🎯</div>还没有设置今日目标</div></div>
+            </div></div>
+        </div>
+    </section>
+
+    <!-- Code -->
+    <section class="page-panel" id="page-snippets">
+        <div class="page-header"><div class="page-title">💻 代码片段</div><div class="page-desc">编写、保存并在线运行代码</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>💻 编辑代码</h3>
+                <input type="text" id="snippetTitle" placeholder="代码片段名称">
+                <select id="snippetLang" style="margin-top:8px;"><option value="python">Python</option><option value="javascript">JavaScript</option><option value="other">其他</option></select>
+                <textarea id="snippetCode" placeholder="写代码...
+
+Python 示例：
+for i in range(5):
+    print(f'Epoch {i+1}: loss={0.1*(5-i):.2f}')" style="min-height:160px;margin-top:8px;"></textarea>
+                <div class="btn-group"><button class="btn btn-primary" onclick="saveSnippet()">💾 保存</button><button class="btn btn-success" onclick="runSnippet()">▶ 运行</button><button class="btn btn-danger" onclick="deleteSnippet()">🗑️ 删除</button></div>
+                <div id="codeOutput" class="code-output"></div>
+            </div></div>
+            <div class="card-col"><div class="card"><h3>📂 代码片段库</h3><div id="snippetsList" class="list-scroll"></div></div></div>
+        </div>
+    </section>
+
+    <!-- Resources -->
+    <section class="page-panel" id="page-resources">
+        <div class="page-header"><div class="page-title">📚 知识资源</div><div class="page-desc">收藏学习资料链接，分类管理</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>🔗 添加资源</h3>
+                <input type="text" id="resTitle" placeholder="资源名称"><input type="text" id="resUrl" placeholder="资源链接" style="margin-top:8px;">
+                <select id="resCategory" style="margin-top:8px;"><option value="课程">📖 课程</option><option value="论文">📄 论文</option><option value="教程">📝 教程</option><option value="工具">🛠️ 工具</option><option value="数据集">📊 数据集</option><option value="其他">📌 其他</option></select>
+                <div class="btn-group"><button class="btn btn-primary" onclick="saveResource()">💾 收藏</button><button class="btn btn-danger" onclick="deleteResource()">🗑️ 删除</button></div>
+            </div></div>
+            <div class="card-col"><div class="card">
+                <h3>📚 资源收藏夹</h3>
+                <div style="margin-bottom:12px;display:flex;gap:4px;flex-wrap:wrap;" id="resFilter">
+                    <button class="btn btn-sm btn-outline" onclick="filterResources('全部')">全部</button><button class="btn btn-sm btn-outline" onclick="filterResources('课程')">📖 课程</button><button class="btn btn-sm btn-outline" onclick="filterResources('论文')">📄 论文</button><button class="btn btn-sm btn-outline" onclick="filterResources('教程')">📝 教程</button><button class="btn btn-sm btn-outline" onclick="filterResources('工具')">🛠️ 工具</button><button class="btn btn-sm btn-outline" onclick="filterResources('数据集')">📊 数据集</button>
+                </div>
+                <div id="resourcesList" class="list-scroll"></div>
+            </div></div>
+        </div>
+    </section>
+
+    <!-- Flashcards -->
+    <section class="page-panel" id="page-flashcards">
+        <div class="page-header"><div class="page-title">🃏 闪卡记忆</div><div class="page-desc">翻转卡片，巩固知识点</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>➕ 新增闪卡</h3>
+                <input type="text" id="cardFront" placeholder="正面（问题）" style="margin-bottom:8px;">
+                <input type="text" id="cardBack" placeholder="背面（答案）">
+                <div class="btn-group"><button class="btn btn-primary" onclick="addCard()">💾 保存卡片</button></div>
+            </div></div>
+            <div class="card-col"><div class="card">
+                <h3>🃏 复习</h3>
+                <div class="flashcard" id="flashcardEl" onclick="flipCard()">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front" id="cardFrontDisplay">点击添加卡片开始</div>
+                        <div class="flashcard-back" id="cardBackDisplay"></div>
+                    </div>
+                </div>
+                <div class="card-nav">
+                    <button class="btn btn-sm btn-outline" onclick="prevCard()">◀ 上一张</button>
+                    <button class="btn btn-sm btn-outline" onclick="nextCard()">下一张 ▶</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCard()">🗑️</button>
+                </div>
+                <div class="card-counter" id="cardCounter">0 / 0</div>
+                <div style="text-align:center;margin-top:6px;">💡 点击卡片翻转查看答案</div>
+            </div></div>
+        </div>
+    </section>
+
+    <!-- Rewards -->
+    <section class="page-panel" id="page-rewards">
+        <div class="page-header"><div class="page-title">🏆 学习奖励</div><div class="page-desc">积累经验值，解锁成就徽章</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card">
+                <h3>⭐ 等级进度</h3>
+                <div style="text-align:center;padding:10px 0;">
+                    <div style="font-size:48px;" id="levelEmoji">🌱</div>
+                    <div style="font-size:20px;font-weight:700;color:#fbbf24;" id="levelName">Lv.1 · 初学者</div>
+                    <div class="level-bar"><div class="level-bar-fill" id="levelFill" style="width:0%;"></div></div>
+                    <div class="xp-text" id="xpText">0 / 100 XP</div>
+                </div>
+            </div>
+            <div class="card"><h3>📜 获取经验规则</h3>
+                <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+                    🍅 完成一个番茄 +50 XP<br>✅ 完成一个任务 +30 XP<br>📝 保存一篇笔记 +10 XP<br>
+                    💻 保存代码片段 +15 XP<br>🃏 复习一张闪卡 +5 XP<br>📚 收藏资源 +8 XP
+                </div>
+            </div></div>
+            <div class="card-col"><div class="card">
+                <h3>🎖️ 成就徽章</h3>
+                <div class="badge-grid" id="badgeGrid"></div>
+            </div>
+            <div class="card"><h3>📋 奖励日志</h3><div class="reward-log" id="rewardLog"></div></div></div>
+        </div>
+    </section>
+
+    <!-- Pomodoro -->
+    <section class="page-panel" id="page-pomodoro">
+        <div class="page-header"><div class="page-title">⏱️ 专注计时</div><div class="page-desc">番茄工作法，提升学习效率</div></div>
+        <div class="card-row">
+            <div class="card-col"><div class="card" style="text-align:center;">
+                <h3>⏱️ 番茄钟</h3>
+                <div class="timer-ring" id="timerRing"><span id="timerText">25:00</span></div>
+                <div class="timer-settings">
+                    <label>🍅 专注 <input type="number" id="workMinutes" value="25" min="1" max="120" onchange="updateTimerFromSettings()"> 分钟</label>
+                    <label>☕ 休息 <input type="number" id="breakMinutes" value="5" min="1" max="60" onchange="updateTimerFromSettings()"> 分钟</label>
+                </div>
+                <div class="btn-group" style="justify-content:center;">
+                    <button class="btn btn-success" onclick="setWorkMode()" id="btnWork">🍅 工作</button>
+                    <button class="btn btn-warn" onclick="setBreakMode()" id="btnBreak">☕ 休息</button>
+                </div>
+                <div class="btn-group" style="justify-content:center;margin-top:10px;">
+                    <button class="btn btn-success" onclick="startTimer()" id="btnStart">▶ 开始</button>
+                    <button class="btn btn-warn" onclick="pauseTimer()" id="btnPause" style="display:none;">⏸ 暂停</button>
+                    <button class="btn btn-danger" onclick="resetTimer()">🔄 重置</button>
+                </div>
+            </div></div>
+            <div class="card-col">
+                <div class="card"><h3>📈 今日统计</h3>
+                    <div class="timer-stats">
+                        <div class="tstat"><div class="num" id="pomoCount">0</div><div class="label">完成番茄数</div></div>
+                        <div class="tstat"><div class="num" id="studyMinutes">0</div><div class="label">专注分钟</div></div>
+                        <div class="tstat"><div class="num" id="streakDays">0</div><div class="label">连续天数</div></div>
+                    </div>
+                </div>
+                <div class="card"><h4 style="margin-bottom:10px;font-size:13px;color:#aaa;">📋 今日记录</h4>
+                    <div id="pomoLog" class="list-scroll" style="max-height:150px;font-size:12px;color:var(--text2);"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Relax -->
+    <section class="page-panel" id="page-relax">
+        <div class="page-header"><div class="page-title">🌿 休息放松</div><div class="page-desc">劳逸结合，放松身心</div></div>
+        <div class="relax-grid">
+            <!-- Breathing -->
+            <div class="relax-card">
+                <h3 style="color:#a78bfa;">🧘 呼吸练习</h3>
+                <div class="breath-circle" id="breathCircle"></div>
+                <div class="breath-text" id="breathText">点击开始</div>
+                <div class="btn-group" style="justify-content:center;">
+                    <button class="btn btn-primary" id="btnBreath" onclick="toggleBreath()">▶ 开始呼吸练习</button>
+                </div>
+                <div style="font-size:11px;color:#555;margin-top:8px;">4-7-8 呼吸法：吸气4秒 · 屏息7秒 · 呼气8秒</div>
+            </div>
+            <!-- White Noise -->
+            <div class="relax-card">
+                <h3 style="color:#a78bfa;">🔊 白噪音</h3>
+                <div style="margin:10px 0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+                    <button class="btn btn-sm btn-outline" onclick="playSound('rain')" id="btnRain">🌧️ 雨声</button>
+                    <button class="btn btn-sm btn-outline" onclick="playSound('forest')" id="btnForest">🌲 森林</button>
+                    <button class="btn btn-sm btn-outline" onclick="playSound('ocean')" id="btnOcean">🌊 海浪</button>
+                    <button class="btn btn-sm btn-outline" onclick="playSound('fire')" id="btnFire">🔥 篝火</button>
+                    <button class="btn btn-sm btn-danger" onclick="stopSound()">🔇 停止</button>
+                </div>
+                <p style="font-size:11px;color:#555;">选择环境音，帮助放松和专注</p>
+            </div>
+            <!-- Xiaohongshu -->
+            <div class="relax-card" style="grid-column:span 2;">
+                <h3 style="color:#ff4d6a;">📱 小红书 5分钟放松</h3>
+                <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">刷一刷短视频，放松大脑（需登录小红书账号）</p>
+                <div class="xhs-container" id="xhsContainer">
+                    <iframe id="xhsFrame" src="" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"></iframe>
+                    <div class="xhs-fallback" id="xhsFallback">
+                        <span style="font-size:40px;">📱</span>
+                        <p style="margin:10px 0;">点击下方按钮打开小红书</p>
+                        <button class="btn btn-primary" onclick="openXiaohongshu()" style="background:linear-gradient(135deg,#ff4d6a,#ff2442);">📱 打开小红书网页版</button>
+                        <p style="font-size:10px;color:#444;margin-top:8px;">将打开小红书探索页，你可以浏览短视频</p>
+                    </div>
+                </div>
+                <div class="btn-group" style="justify-content:center;margin-top:8px;">
+                    <button class="btn btn-sm" onclick="openXiaohongshu()" style="background:linear-gradient(135deg,#ff4d6a,#ff2442);color:white;">📱 在新窗口打开小红书</button>
+                    <button class="btn btn-sm btn-outline" onclick="refreshXHS()">🔄 刷新</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="page-panel" id="page-stats">
+        <div class="page-header"><div class="page-title">📊 数据统计</div><div class="page-desc">学习数据一览</div></div>
+        <div class="stats-row">
+            <div class="stat-card purple"><div class="sn" id="statTotalNotes">0</div><div class="sl">📝 总笔记数</div></div>
+            <div class="stat-card green"><div class="sn" id="statTotalTasks">0</div><div class="sl">📋 总任务数</div></div>
+            <div class="stat-card orange"><div class="sn" id="statTotalSnippets">0</div><div class="sl">💻 代码片段</div></div>
+            <div class="stat-card red"><div class="sn" id="statTotalResources">0</div><div class="sl">📚 资源收藏</div></div>
+            <div class="stat-card blue"><div class="sn" id="statTotalCards">0</div><div class="sl">🃏 闪卡数量</div></div>
+        </div>
+        <div class="card-row">
+            <div class="card-col"><div class="card"><h3>📊 笔记数量趋势（近7天）</h3><canvas id="myChart" height="200"></canvas></div></div>
+            <div class="card-col"><div class="card"><h3>📈 学习任务完成率</h3><canvas id="taskChart" height="200"></canvas></div></div>
+        </div>
+    </section>
+    </main>
+</div>
+
 <script>
-    // ========== 全局变量 ==========
-    let currentUser = null;
-    let allNotes = [];           // 笔记 [{id, content, title, time}]
-    let currentNoteIndex = -1;
-    let chartObj = null;
-    let taskChartObj = null;
+// ========== Globals ==========
+let currentUser=null;
+let allNotes=[],currentNoteIndex=-1;
+let chartObj=null,taskChartObj=null;
+let tasks=[];
+let snippets=[],currentSnippetIdx=-1;
+let resources=[],currentResIdx=-1,resourceFilter='全部';
+let flashcards=[],currentCardIdx=0,cardFlipped=false;
+let timerInterval=null,timerSeconds=25*60,timerRunning=false,timerMode='work';
+let pomoData={count:0,minutes:0,log:[],date:''};
+let rewardData={xp:0,level:1,badges:[],log:[]};
+let dailyGoals=[];
+let relaxSound=null,breathActive=false,breathInterval=null;
 
-    // 新增板块数据
-    let tasks = [];              // 任务 [{id, text, status: 'todo'|'doing'|'done', time}]
-    let snippets = [];           // 代码片段 [{id, title, code, lang, time}]
-    let currentSnippetIdx = -1;
-    let resources = [];          // 资源 [{id, title, url, category, time}]
-    let currentResIdx = -1;
-    let resourceFilter = '全部';
+// ========== Sidebar ==========
+function switchPage(page,el){
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    if(el)el.classList.add('active');
+    document.querySelectorAll('.page-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+    if(page==='stats'){updateChart();updateTaskChart();updateStatsCards();}
+    if(page==='pomodoro')refreshPomoDisplay();
+    if(page==='kanban')refreshKanban();
+    if(page==='rewards')refreshRewards();
+    if(page==='flashcards')refreshFlashcardDisplay();
+    if(page==='goals')refreshGoals();
+    if(page==='relax')refreshRelax();
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+function updateBadges(){
+    document.getElementById('badgeNotes').innerText=allNotes.length;
+    document.getElementById('badgeTasks').innerText=tasks.length;
+    document.getElementById('badgeSnippets').innerText=snippets.length;
+    document.getElementById('badgeResources').innerText=resources.length;
+    document.getElementById('badgeCards').innerText=flashcards.length;
+}
 
-    // 番茄钟
-    let timerInterval = null;
-    let timerSeconds = 25 * 60;  // 默认 25 分钟
-    let timerRunning = false;
-    let timerMode = 'work';      // 'work' | 'break'
-    let pomoData = { count: 0, minutes: 0, log: [], date: '' };
+// ========== Toast ==========
+function toast(msg){
+    let t=document.createElement('div');t.className='toast';t.innerText=msg;
+    document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
 
-    // ========== 用户登录/登出 ==========
-    function doLogin() {
-        let name = document.getElementById('username').value.trim();
-        if (!name) name = "学习者";
-        currentUser = { id: "user_" + name, name: name };
-        document.getElementById('displayName').innerText = name + " 👋";
-        document.getElementById('loginPanel').style.display = 'none';
-        document.getElementById('mainPanel').style.display = 'block';
-        loadAllData();
-    }
+// ========== Login ==========
+function doLogin(){
+    let name=document.getElementById('username').value.trim()||'学习者';
+    currentUser={id:'user_'+name,name:name};
+    document.getElementById('sidebarUserName').innerText=name;
+    document.getElementById('sidebarAvatar').innerText=name[0].toUpperCase();
+    document.getElementById('loginOverlay').style.display='none';
+    document.getElementById('appShell').classList.add('active');
+    loadAllData();
+}
+function doLogout(){pauseTimer();currentUser=null;document.getElementById('loginOverlay').style.display='flex';document.getElementById('appShell').classList.remove('active');}
 
-    function doLogout() {
-        pauseTimer();
-        currentUser = null;
-        document.getElementById('loginPanel').style.display = 'block';
-        document.getElementById('mainPanel').style.display = 'none';
-    }
+// ========== Storage ==========
+function sk(p){return p+'_'+(currentUser?currentUser.id:'anon');}
+function save(p,d){localStorage.setItem(sk(p),JSON.stringify(d));}
+function genId(){return Date.now()+'_'+Math.random().toString(36).substr(2,6);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-    // ========== Tab 切换 ==========
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById('panel-' + tabName).classList.add('active');
+// ========== Reward System ==========
+const LEVELS=[
+    {xp:0,name:'Lv.1 · 初学者',emoji:'🌱'},{xp:100,name:'Lv.2 · 探索者',emoji:'🌿'},
+    {xp:250,name:'Lv.3 · 学徒',emoji:'📖'},{xp:500,name:'Lv.4 · 进阶者',emoji:'⚡'},
+    {xp:800,name:'Lv.5 · 钻研者',emoji:'🔬'},{xp:1200,name:'Lv.6 · 深度学习er',emoji:'🧠'},
+    {xp:1800,name:'Lv.7 · 高手',emoji:'💎'},{xp:2600,name:'Lv.8 · 专家',emoji:'👑'},
+    {xp:3600,name:'Lv.9 · 大师',emoji:'🌟'},{xp:5000,name:'Lv.10 · 传奇',emoji:'🚀'}
+];
+const BADGES=[
+    {id:'first_pomo',name:'初次专注',emoji:'🍅',desc:'完成第1个番茄',check:()=>pomoData.count>=1},
+    {id:'pomo_10',name:'番茄达人',emoji:'🍅',desc:'完成10个番茄',check:()=>pomoData.count>=10},
+    {id:'pomo_50',name:'专注大师',emoji:'⏱️',desc:'完成50个番茄',check:()=>pomoData.count>=50},
+    {id:'task_5',name:'任务收割者',emoji:'✅',desc:'完成5个任务',check:()=>tasks.filter(t=>t.status==='done').length>=5},
+    {id:'note_10',name:'笔耕不辍',emoji:'📝',desc:'保存10篇笔记',check:()=>allNotes.length>=10},
+    {id:'snippet_5',name:'代码工匠',emoji:'💻',desc:'保存5个代码片段',check:()=>snippets.length>=5},
+    {id:'res_10',name:'资源收集者',emoji:'📚',desc:'收藏10个资源',check:()=>resources.length>=10},
+    {id:'card_5',name:'记忆达人',emoji:'🃏',desc:'创建5张闪卡',check:()=>flashcards.length>=5},
+    {id:'streak_3',name:'三日坚持',emoji:'🔥',desc:'连续学习3天',check:()=>getStreak()>=3},
+    {id:'streak_7',name:'周冠军',emoji:'🏅',desc:'连续学习7天',check:()=>getStreak()>=7},
+    {id:'level_5',name:'进阶之路',emoji:'⚡',desc:'达到 Lv.5',check:()=>rewardData.level>=5},
+    {id:'xp_1000',name:'经验收割机',emoji:'⭐',desc:'累计获得1000 XP',check:()=>rewardData.xp>=1000}
+];
 
-        if (tabName === 'stats') { updateChart(); updateTaskChart(); updateStatsCards(); }
-        if (tabName === 'pomodoro') refreshPomoDisplay();
-        if (tabName === 'kanban') refreshKanban();
-    }
+function getStreak(){
+    let d=localStorage.getItem(sk('pomoDaily')),dl=d?JSON.parse(d):[];
+    let s=0,c=new Date();
+    for(let i=0;i<365;i++){if(dl.includes(c.toDateString())){s++;c.setDate(c.getDate()-1);}else break;}
+    return s;
+}
 
-    // ========== 数据加载/保存 ==========
-    function storageKey(prefix) { return prefix + '_' + currentUser.id; }
+function addXP(amount,reason){
+    rewardData.xp+=amount;
+    rewardData.log.unshift({time:new Date().toLocaleTimeString(),amount,reason});
+    if(rewardData.log.length>20)rewardData.log.length=20;
+    let newLv=1;
+    for(let i=LEVELS.length-1;i>=0;i--){if(rewardData.xp>=LEVELS[i].xp){newLv=i+1;break;}}
+    if(newLv>rewardData.level){rewardData.level=newLv;toast('🎉 升级了！'+LEVELS[newLv-1].name);}
+    // Check badges
+    BADGES.forEach(b=>{if(!rewardData.badges.includes(b.id)&&b.check()){rewardData.badges.push(b.id);toast('🏅 解锁成就：'+b.name);}});
+    save('rewardData',rewardData);
+    refreshRewards();
+    updateSidebarLevel();
+}
 
-    function loadAllData() {
-        // 笔记
-        let stored = localStorage.getItem(storageKey('notes'));
-        allNotes = stored ? JSON.parse(stored) : [
-            { id: genId(), title: '深度学习入门', content: '深度学习是机器学习的子集，基于神经网络。', time: Date.now() - 2*86400000 },
-            { id: genId(), title: 'CNN 笔记', content: 'CNN卷积神经网络：卷积层、池化层、全连接层。', time: Date.now() - 86400000 },
-            { id: genId(), title: '反向传播', content: '反向传播是训练神经网络的核心算法。', time: Date.now() }
-        ];
-        if (!localStorage.getItem(storageKey('notes'))) saveToStorage('notes', allNotes);
+function updateSidebarLevel(){
+    document.getElementById('sidebarLevel').innerText='Lv.'+rewardData.level;
+}
 
-        // 任务
-        stored = localStorage.getItem(storageKey('tasks'));
-        tasks = stored ? JSON.parse(stored) : [
-            { id: genId(), text: '学习CNN反向传播推导', status: 'doing', time: Date.now() - 3600000 },
-            { id: genId(), text: '完成吴恩达课程第3周', status: 'todo', time: Date.now() },
-            { id: genId(), text: '复习激活函数', status: 'done', time: Date.now() - 86400000 }
-        ];
-        if (!localStorage.getItem(storageKey('tasks'))) saveToStorage('tasks', tasks);
+function refreshRewards(){
+    let lv=LEVELS[Math.min(rewardData.level-1,LEVELS.length-1)];
+    let nextLv=LEVELS[Math.min(rewardData.level,LEVELS.length-1)];
+    let lvXp=lv.xp,totalXpNeeded=nextLv.xp-lvXp,currentXp=rewardData.xp-lvXp;
+    let pct=Math.min(100,Math.round((currentXp/totalXpNeeded)*100));
+    document.getElementById('levelEmoji').innerText=lv.emoji;
+    document.getElementById('levelName').innerText=lv.name;
+    document.getElementById('levelFill').style.width=pct+'%';
+    document.getElementById('xpText').innerText=currentXp+' / '+totalXpNeeded+' XP';
+    // Badges
+    let bg=document.getElementById('badgeGrid');
+    bg.innerHTML=BADGES.map(b=>'<div class="badge-item '+(rewardData.badges.includes(b.id)?'earned':'locked')+'" title="'+(rewardData.badges.includes(b.id)?b.name+' ✓':b.desc+' (未解锁)')+'">'+b.emoji+'<span class="badge-tip">'+b.name+'</span></div>').join('');
+    // Log
+    document.getElementById('rewardLog').innerHTML=rewardData.log.length===0?'<div class="empty-state">还没有奖励记录</div>':rewardData.log.map(l=>'<div style="padding:4px 0;border-bottom:1px solid var(--border);">'+l.time+' · <span style="color:#fbbf24;">+'+l.amount+' XP</span> · '+l.reason+'</div>').join('');
+}
 
-        // 代码片段
-        stored = localStorage.getItem(storageKey('snippets'));
-        snippets = stored ? JSON.parse(stored) : [
-            { id: genId(), title: '训练循环模拟', code: 'import random\n\nlosses = []\nfor epoch in range(3):\n    loss = round(random.uniform(0.8, 0.1), 4)\n    losses.append(loss)\n    print(f"Epoch {epoch+1}: loss={loss}")\n\nprint(f"\\n最低 loss: {min(losses)}")', lang: 'python', time: Date.now() - 3600000 },
-            { id: genId(), title: 'Hello World', code: '// JavaScript 示例\nconsole.log("Hello, Deep Learner!");\nlet x = [1, 2, 3].map(n => n * 2);\nconsole.log("x:", x);\nconsole.log("sum:", x.reduce((a, b) => a + b, 0));', lang: 'javascript', time: Date.now() }
-        ];
-        if (!localStorage.getItem(storageKey('snippets'))) saveToStorage('snippets', snippets);
-
-        // 资源
-        stored = localStorage.getItem(storageKey('resources'));
-        resources = stored ? JSON.parse(stored) : [
-            { id: genId(), title: '吴恩达深度学习专项课程', url: 'https://www.coursera.org/specializations/deep-learning', category: '课程', time: Date.now() },
-            { id: genId(), title: 'PyTorch 官方文档', url: 'https://pytorch.org/docs/stable/', category: '工具', time: Date.now() - 86400000 }
-        ];
-        if (!localStorage.getItem(storageKey('resources'))) saveToStorage('resources', resources);
-
-        // 番茄钟数据
-        stored = localStorage.getItem(storageKey('pomoData'));
-        if (stored) {
-            pomoData = JSON.parse(stored);
-            let today = new Date().toDateString();
-            if (pomoData.date !== today) { pomoData = { count: 0, minutes: 0, log: [], date: today }; }
-        } else {
-            pomoData = { count: 0, minutes: 0, log: [], date: new Date().toDateString() };
-        }
-
-        // 初始化界面
-        if (allNotes.length > 0) { currentNoteIndex = 0; showNoteInEditor(); }
-        if (snippets.length > 0) { currentSnippetIdx = 0; showSnippetInEditor(); }
-        if (resources.length > 0) { currentResIdx = 0; }
-        refreshNotesList();
-        refreshKanban();
-        refreshSnippetsList();
-        refreshResourcesList();
-        refreshPomoDisplay();
-        updateChart();
-    }
-
-    function saveToStorage(prefix, data) {
-        localStorage.setItem(storageKey(prefix), JSON.stringify(data));
-    }
-
-    function genId() { return Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
-
-    // ==================== 笔记管理 ====================
-    function showNoteInEditor() {
-        if (currentNoteIndex >= 0 && allNotes[currentNoteIndex]) {
-            document.getElementById('noteTitle').value = allNotes[currentNoteIndex].title || '';
-            document.getElementById('noteContent').value = allNotes[currentNoteIndex].content || '';
-        }
-    }
-
-    function newNote() {
-        currentNoteIndex = -1;
-        document.getElementById('noteTitle').value = '';
-        document.getElementById('noteContent').value = '';
-    }
-
-    function saveNote() {
-        let title = document.getElementById('noteTitle').value.trim();
-        let content = document.getElementById('noteContent').value;
-        if (!content.trim()) { alert('请写点内容'); return; }
-        if (!title) title = '未命名笔记';
-        if (currentNoteIndex >= 0 && allNotes[currentNoteIndex]) {
-            allNotes[currentNoteIndex].title = title;
-            allNotes[currentNoteIndex].content = content;
-            allNotes[currentNoteIndex].time = Date.now();
-        } else {
-            allNotes.unshift({ id: genId(), title: title, content: content, time: Date.now() });
-            currentNoteIndex = 0;
-        }
-        saveToStorage('notes', allNotes);
-        refreshNotesList();
-        updateStatsCards();
-        alert('✅ 笔记已保存到云端');
-    }
-
-    function deleteNote() {
-        if (allNotes.length === 0) return;
-        if (confirm('删除这篇笔记？')) {
-            allNotes.splice(currentNoteIndex, 1);
-            saveToStorage('notes', allNotes);
-            currentNoteIndex = allNotes.length > 0 ? 0 : -1;
-            if (currentNoteIndex >= 0) showNoteInEditor();
-            else { document.getElementById('noteTitle').value = ''; document.getElementById('noteContent').value = ''; }
-            refreshNotesList();
-            updateStatsCards();
-        }
-    }
-
-    function refreshNotesList() {
-        let c = document.getElementById('notesList');
-        c.innerHTML = '';
-        allNotes.forEach((note, i) => {
-            let div = document.createElement('div');
-            div.className = 'list-item';
-            div.innerHTML = '<div class="item-title">📄 ' + (note.title || '笔记' + (i+1)) + '</div>'
-                + '<div class="item-preview">' + note.content.substring(0, 40) + (note.content.length>40?'...':'') + '</div>'
-                + '<div class="item-meta">' + new Date(note.time).toLocaleString() + '</div>';
-            div.onclick = () => { currentNoteIndex = i; showNoteInEditor(); };
-            c.appendChild(div);
+// ========== Daily Goals ==========
+function refreshGoals(){
+    let today=new Date().toDateString();
+    if(dailyGoals.length===0||dailyGoals[0].date!==today){
+        dailyGoals=[{date:today,items:[
+            {id:genId(),text:'完成 4 个番茄',target:4,current:pomoData.count,type:'pomo'},
+            {id:genId(),text:'完成 3 个任务',target:3,current:tasks.filter(t=>t.status==='done').length,type:'task'},
+            {id:genId(),text:'写 1 篇笔记',target:1,current:allNotes.filter(n=>new Date(n.time).toDateString()===today).length,type:'note'}
+        ]}];
+        save('dailyGoals',dailyGoals);
+    }else{
+        dailyGoals[0].items.forEach(g=>{
+            if(g.type==='pomo')g.current=pomoData.count;
+            if(g.type==='task')g.current=tasks.filter(t=>t.status==='done').length;
+            if(g.type==='note')g.current=allNotes.filter(n=>new Date(n.time).toDateString()===today).length;
         });
     }
+    let gl=document.getElementById('goalsList');
+    gl.innerHTML=dailyGoals[0].items.map(g=>{
+        let pct=Math.min(100,Math.round((g.current/g.target)*100));
+        return '<div class="goal-item"><span class="goal-label">'+esc(g.text)+'</span><div class="goal-bar"><div class="goal-fill" style="width:'+pct+'%"></div></div><span class="goal-num">'+g.current+'/'+g.target+'</span></div>';
+    }).join('')||'<div class="empty-state"><div class="empty-icon">🎯</div>还没有设置今日目标</div>';
 
-    // ==================== 智能客服 ====================
-    function ask() {
-        let input = document.getElementById('question');
-        let q = input.value.trim();
-        if (!q) return;
-        let chatArea = document.getElementById('chatArea');
-        let ud = document.createElement('div'); ud.className = 'chat-msg user-msg'; ud.innerText = '👤 ' + q;
-        chatArea.appendChild(ud);
-        let bd = document.createElement('div'); bd.className = 'chat-msg bot-msg'; bd.innerText = '🤖 ' + getAnswer(q);
-        chatArea.appendChild(bd);
-        chatArea.scrollTop = chatArea.scrollHeight;
-        input.value = '';
+    let form=document.getElementById('goalsForm');
+    form.innerHTML='<div style="display:flex;gap:6px;align-items:center;"><input type="text" id="newGoalText" placeholder="目标描述（如：学习2小时）"><input type="number" id="newGoalTarget" value="1" min="1" style="width:50px;"><span style="font-size:12px;color:var(--text2);">次</span></div>';
+    document.getElementById('btnAddGoal').onclick=()=>{
+        let t=document.getElementById('newGoalText').value.trim();
+        let n=parseInt(document.getElementById('newGoalTarget').value)||1;
+        if(!t)return;
+        dailyGoals[0].items.push({id:genId(),text:t,target:n,current:0,type:'custom'});
+        save('dailyGoals',dailyGoals);refreshGoals();
+    };
+    save('dailyGoals',dailyGoals);
+}
+
+// ========== Data Load ==========
+function loadAllData(){
+    let stored;
+    stored=localStorage.getItem(sk('notes'));
+    allNotes=stored?JSON.parse(stored):[{id:genId(),title:'深度学习入门',content:'深度学习是机器学习的子集，基于神经网络。',time:Date.now()-2*86400000},{id:genId(),title:'CNN 笔记',content:'CNN卷积神经网络：卷积层、池化层、全连接层。',time:Date.now()-86400000},{id:genId(),title:'反向传播',content:'反向传播是训练神经网络的核心算法。',time:Date.now()}];
+    if(!localStorage.getItem(sk('notes')))save('notes',allNotes);
+    stored=localStorage.getItem(sk('tasks'));
+    tasks=stored?JSON.parse(stored):[{id:genId(),text:'学习CNN反向传播推导',status:'doing',time:Date.now()-3600000},{id:genId(),text:'完成吴恩达课程第3周',status:'todo',time:Date.now()},{id:genId(),text:'复习激活函数',status:'done',time:Date.now()-86400000}];
+    if(!localStorage.getItem(sk('tasks')))save('tasks',tasks);
+    stored=localStorage.getItem(sk('snippets'));
+    snippets=stored?JSON.parse(stored):[{id:genId(),title:'训练循环模拟',code:'import random\n\nlosses = []\nfor epoch in range(3):\n    loss = round(random.uniform(0.8, 0.1), 4)\n    losses.append(loss)\n    print(f"Epoch {epoch+1}: loss={loss}")\n\nprint(f"\\n最低 loss: {min(losses)}")',lang:'python',time:Date.now()-3600000},{id:genId(),title:'Hello World',code:'// JavaScript 示例\nconsole.log("Hello, Deep Learner!");\nlet x = [1, 2, 3].map(n => n * 2);\nconsole.log("x:", x);\nconsole.log("sum:", x.reduce((a, b) => a + b, 0));',lang:'javascript',time:Date.now()}];
+    if(!localStorage.getItem(sk('snippets')))save('snippets',snippets);
+    stored=localStorage.getItem(sk('resources'));
+    resources=stored?JSON.parse(stored):[{id:genId(),title:'吴恩达深度学习专项课程',url:'https://www.coursera.org/specializations/deep-learning',category:'课程',time:Date.now()},{id:genId(),title:'PyTorch 官方文档',url:'https://pytorch.org/docs/stable/',category:'工具',time:Date.now()-86400000}];
+    if(!localStorage.getItem(sk('resources')))save('resources',resources);
+    stored=localStorage.getItem(sk('flashcards'));
+    flashcards=stored?JSON.parse(stored):[{id:genId(),front:'什么是反向传播？',back:'通过链式法则计算损失函数对每层权重的梯度，从输出层向输入层逐层传递误差并更新参数。',time:Date.now()},{id:genId(),front:'CNN的核心三层是什么？',back:'卷积层（提取特征）、池化层（降维）、全连接层（分类输出）',time:Date.now()},{id:genId(),front:'过拟合的解决方法有哪些？',back:'1.数据增强 2.Dropout 3.正则化(L1/L2) 4.早停 5.减少模型复杂度',time:Date.now()}];
+    if(!localStorage.getItem(sk('flashcards')))save('flashcards',flashcards);
+    stored=localStorage.getItem(sk('pomoData'));
+    if(stored){pomoData=JSON.parse(stored);let today=new Date().toDateString();if(pomoData.date!==today)pomoData={count:0,minutes:0,log:[],date:today};}else{pomoData={count:0,minutes:0,log:[],date:new Date().toDateString()};}
+    stored=localStorage.getItem(sk('rewardData'));
+    rewardData=stored?JSON.parse(stored):{xp:0,level:1,badges:[],log:[]};
+    stored=localStorage.getItem(sk('dailyGoals'));
+    dailyGoals=stored?JSON.parse(stored):[];
+    if(allNotes.length>0){currentNoteIndex=0;showNoteInEditor();}
+    if(snippets.length>0){currentSnippetIdx=0;showSnippetInEditor();}
+    if(resources.length>0)currentResIdx=0;
+    if(flashcards.length>0)currentCardIdx=0;
+    refreshNotesList();refreshKanban();refreshSnippetsList();refreshResourcesList();refreshPomoDisplay();
+    refreshFlashcardDisplay();refreshRewards();refreshGoals();updateChart();updateBadges();updateStatsCards();
+    updateSidebarLevel();
+}
+
+// ==================== Notes ====================
+function showNoteInEditor(){if(currentNoteIndex>=0&&allNotes[currentNoteIndex]){document.getElementById('noteTitle').value=allNotes[currentNoteIndex].title||'';document.getElementById('noteContent').value=allNotes[currentNoteIndex].content||'';}}
+function newNote(){currentNoteIndex=-1;document.getElementById('noteTitle').value='';document.getElementById('noteContent').value='';}
+function saveNote(){
+    let title=document.getElementById('noteTitle').value.trim()||'未命名笔记',content=document.getElementById('noteContent').value;
+    if(!content.trim()){alert('请写点内容');return;}
+    if(currentNoteIndex>=0&&allNotes[currentNoteIndex]){allNotes[currentNoteIndex].title=title;allNotes[currentNoteIndex].content=content;allNotes[currentNoteIndex].time=Date.now();}
+    else{allNotes.unshift({id:genId(),title,content,time:Date.now()});currentNoteIndex=0;addXP(10,'保存笔记');}
+    save('notes',allNotes);refreshNotesList();updateBadges();updateStatsCards();refreshGoals();toast('✅ 笔记已保存 +10 XP');
+}
+function deleteNote(){if(allNotes.length===0)return;if(confirm('删除这篇笔记？')){allNotes.splice(currentNoteIndex,1);save('notes',allNotes);currentNoteIndex=allNotes.length>0?0:-1;currentNoteIndex>=0?showNoteInEditor():(document.getElementById('noteTitle').value='',document.getElementById('noteContent').value='');refreshNotesList();updateBadges();updateStatsCards();}}
+function refreshNotesList(){
+    let c=document.getElementById('notesList');
+    if(allNotes.length===0){c.innerHTML='<div class="empty-state"><div class="empty-icon">📄</div>暂无笔记</div>';return;}
+    c.innerHTML=allNotes.map((n,i)=>'<div class="list-item" onclick="currentNoteIndex='+i+';showNoteInEditor()"><div class="item-title">📄 '+esc(n.title||'笔记'+(i+1))+'</div><div class="item-preview">'+esc(n.content.substring(0,60)+(n.content.length>60?'...':''))+'</div><div class="item-meta"><span>'+new Date(n.time).toLocaleString()+'</span></div></div>').join('');
+}
+
+// ==================== Chat ====================
+function ask(){
+    let input=document.getElementById('question'),q=input.value.trim();if(!q)return;
+    let ca=document.getElementById('chatArea');
+    ca.innerHTML+='<div class="chat-msg user">👤 '+esc(q)+'</div><div class="chat-msg bot">🤖 '+getAnswer(q)+'</div>';
+    ca.scrollTop=ca.scrollHeight;input.value='';
+}
+function getAnswer(q){q=q.toLowerCase();if(q.includes('cnn')||q.includes('卷积'))return'CNN擅长处理图像数据，核心：卷积提取特征、池化降维、全连接分类。';if(q.includes('rnn')||q.includes('循环'))return'RNN适合序列数据，如文本、音频。常用LSTM和GRU解决梯度消失。';if(q.includes('反向传播')||q.includes('backprop'))return'反向传播通过链式法则计算损失对权重的梯度，更新参数。';if(q.includes('过拟合'))return'过拟合：泛化差。解决：数据增强、Dropout、正则化、早停。';if(q.includes('梯度下降'))return'沿负梯度方向更新参数。变体：SGD、Adam、RMSprop。';if(q.includes('激活函数'))return'ReLU（最常用）、Sigmoid（二分类）、Tanh、Softmax（多分类）。';if(q.includes('损失函数')||q.includes('loss'))return'MSE（回归）、交叉熵（分类）、MAE（鲁棒）。';if(q.includes('transformer'))return'基于自注意力机制，GPT、BERT等大模型的基础架构。';if(q.includes('lstm'))return'LSTM通过门控机制解决长序列梯度消失，适合时间序列。';if(q.includes('dropout'))return'训练时随机丢弃神经元，防止过拟合。';if(q.includes('学习率'))return'控制更新步长。常用Adam自适应学习率。';if(q.includes('神经网络'))return'输入层、隐藏层、输出层组成，通过激活函数实现非线性。';if(q.includes('数据挖掘'))return'聚类（K-means）、分类（决策树）、关联规则（Apriori）。';if(q.includes('聚类'))return'K-means、DBSCAN、层次聚类。';if(q.includes('pytorch'))return'Facebook深度学习框架，动态计算图，适合研究。';if(q.includes('tensorflow'))return'Google深度学习框架，适合大规模生产部署。';return'我可以回答：深度学习/数据挖掘/统计学/编程相关问题，换个问题试试？';}
+
+// ==================== Kanban ====================
+function addTask(){let input=document.getElementById('newTaskInput'),text=input.value.trim();if(!text){alert('请输入任务内容');return;}tasks.push({id:genId(),text,status:'todo',time:Date.now()});save('tasks',tasks);input.value='';refreshKanban();updateBadges();updateStatsCards();refreshGoals();}
+function moveTask(taskId,toStatus){let t=tasks.find(t=>t.id===taskId);if(t)t.status=toStatus;save('tasks',tasks);if(toStatus==='done'){addXP(30,'完成任务');refreshGoals();}refreshKanban();}
+function deleteTask(taskId){if(!confirm('删除这个任务？'))return;tasks=tasks.filter(t=>t.id!==taskId);save('tasks',tasks);refreshKanban();updateBadges();updateStatsCards();}
+function refreshKanban(){renderKanbanCol('todoList','todo');renderKanbanCol('doingList','doing');renderKanbanCol('doneList','done');document.getElementById('todoCount').innerText=tasks.filter(t=>t.status==='todo').length;document.getElementById('doingCount').innerText=tasks.filter(t=>t.status==='doing').length;document.getElementById('doneCount').innerText=tasks.filter(t=>t.status==='done').length;}
+function renderKanbanCol(cid,status){let c=document.getElementById(cid),arr=tasks.filter(t=>t.status===status);if(arr.length===0){c.innerHTML='<div class="empty-state">空空如也</div>';return;}c.innerHTML=arr.map(t=>'<div class="kanban-task '+(status==='done'?'done':'')+'"><span style="flex:1;">'+esc(t.text)+'</span><span class="ta">'+(status!=='todo'?'<button class="btn btn-sm btn-outline" onclick="moveTask(\''+t.id+'\',\'todo\')">←</button>':'')+(status!=='doing'?'<button class="btn btn-sm btn-success" onclick="moveTask(\''+t.id+'\',\'doing\')">▶</button>':'')+(status!=='done'?'<button class="btn btn-sm btn-success" onclick="moveTask(\''+t.id+'\',\'done\')">✓</button>':'')+'<button class="btn btn-sm btn-danger" onclick="deleteTask(\''+t.id+'\')">✕</button></span></div>').join('');}
+
+// ==================== Code Engine ====================
+function runJS(code){let output=[],origLog=console.log;console.log=function(){let args=Array.from(arguments).map(function(a){if(a===null)return'null';if(a===undefined)return'undefined';if(typeof a==='object'){try{return JSON.stringify(a,null,2);}catch(e){return String(a);}}return String(a);});output.push(args.join(' '));};try{let r=eval(code);if(r!==undefined)output.push('=> '+(typeof r==='object'?JSON.stringify(r,null,2):String(r)));}catch(e){output.push('Error: '+e.message);}console.log=origLog;return output.length>0?output.join('\n'):'执行成功（无输出）';}
+function runPython(code){return new Promise(function(resolve){let output=[];Sk.configure({output:function(text){output.push(text);},read:function(x){if(Sk.builtinFiles&&Sk.builtinFiles['files'][x])return Sk.builtinFiles['files'][x];throw'File not found: '+x;}});Sk.misceval.asyncToPromise(function(){return Sk.importMainWithBody('<stdin>',false,code,true);}).then(function(){resolve(output.join('')||'执行成功（无输出）');},function(e){resolve('Error: '+(e.toString?e.toString():String(e)));});});}
+function runSnippet(){let code=document.getElementById('snippetCode').value,lang=document.getElementById('snippetLang').value,out=document.getElementById('codeOutput');if(!code.trim()){out.className='code-output show';out.innerHTML='<span style="color:#f44747;">⚠️ 请先输入代码</span>';return;}out.className='code-output show';if(lang==='javascript'){out.innerHTML='<div style="color:#888;">▶ 运行结果（JavaScript）：</div>';let r=runJS(code);out.innerHTML+='<div style="color:'+(r.indexOf('Error:')===0?'#f44747':'')+'">'+esc(r)+'</div>';}else if(lang==='python'){out.innerHTML='<div style="color:#888;">▶ 运行结果（Python）：</div><div style="color:#dcdcaa;font-style:italic;">代码运行中...</div>';runPython(code).then(function(r){out.innerHTML='<div style="color:#888;">▶ 运行结果（Python）：</div><div style="color:'+(r.indexOf('Error:')===0?'#f44747':'')+'">'+esc(r)+'</div>';});}else{out.innerHTML='<span style="color:#f44747;">⚠️ 其他语言暂不支持</span>';}}
+
+// ==================== Snippets ====================
+function showSnippetInEditor(){let out=document.getElementById('codeOutput');out.className='code-output';out.innerHTML='';if(currentSnippetIdx>=0&&snippets[currentSnippetIdx]){let s=snippets[currentSnippetIdx];document.getElementById('snippetTitle').value=s.title||'';document.getElementById('snippetCode').value=s.code||'';document.getElementById('snippetLang').value=s.lang||'python';}}
+function saveSnippet(){let title=document.getElementById('snippetTitle').value.trim()||'未命名片段',code=document.getElementById('snippetCode').value,lang=document.getElementById('snippetLang').value;if(!code.trim()){alert('请输入代码');return;}if(currentSnippetIdx>=0&&snippets[currentSnippetIdx]){snippets[currentSnippetIdx]={id:snippets[currentSnippetIdx].id,title,code,lang,time:Date.now()};}else{snippets.unshift({id:genId(),title,code,lang,time:Date.now()});currentSnippetIdx=0;addXP(15,'保存代码片段');}save('snippets',snippets);refreshSnippetsList();updateBadges();updateStatsCards();toast('✅ 代码已保存 +15 XP');}
+function deleteSnippet(){if(snippets.length===0)return;if(confirm('删除这个片段？')){snippets.splice(currentSnippetIdx,1);save('snippets',snippets);currentSnippetIdx=snippets.length>0?0:-1;currentSnippetIdx>=0?showSnippetInEditor():(document.getElementById('snippetTitle').value='',document.getElementById('snippetCode').value='');refreshSnippetsList();updateBadges();updateStatsCards();}}
+function refreshSnippetsList(){let c=document.getElementById('snippetsList');if(snippets.length===0){c.innerHTML='<div class="empty-state"><div class="empty-icon">💻</div>暂无代码片段</div>';return;}let lbl={python:'py',javascript:'js',other:'other'},cls={python:'lang-py',javascript:'lang-js',other:'lang-other'};c.innerHTML=snippets.map((s,i)=>'<div class="list-item" onclick="currentSnippetIdx='+i+';showSnippetInEditor()"><div class="item-title"><span class="lang-badge '+(cls[s.lang]||'lang-other')+'">'+(lbl[s.lang]||s.lang)+'</span> '+esc(s.title)+'</div><div class="code-preview">'+esc(s.code.substring(0,100)+(s.code.length>100?'...':''))+'</div><div class="item-meta"><span>'+new Date(s.time).toLocaleString()+'</span><button class="btn btn-sm btn-success" onclick="event.stopPropagation();currentSnippetIdx='+i+';showSnippetInEditor();runSnippet()">▶ 运行</button></div></div>').join('');}
+
+// ==================== Resources ====================
+function saveResource(){let title=document.getElementById('resTitle').value.trim(),url=document.getElementById('resUrl').value.trim(),category=document.getElementById('resCategory').value;if(!title){alert('请输入资源名称');return;}if(!url){alert('请输入资源链接');return;}if(!/^https?:\/\//i.test(url))url='https://'+url;if(currentResIdx>=0&&resources[currentResIdx]){resources[currentResIdx]={id:resources[currentResIdx].id,title,url,category,time:Date.now()};}else{resources.unshift({id:genId(),title,url,category,time:Date.now()});currentResIdx=0;addXP(8,'收藏资源');}save('resources',resources);refreshResourcesList();updateBadges();updateStatsCards();toast('✅ 资源已收藏 +8 XP');}
+function deleteResource(){if(resources.length===0)return;if(confirm('删除这个资源？')){resources.splice(currentResIdx,1);save('resources',resources);currentResIdx=resources.length>0?0:-1;refreshResourcesList();updateBadges();updateStatsCards();}}
+function filterResources(cat){resourceFilter=cat;refreshResourcesList();}
+function refreshResourcesList(){let c=document.getElementById('resourcesList'),filtered=resourceFilter==='全部'?resources:resources.filter(r=>r.category===resourceFilter);if(filtered.length===0){c.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div>暂无资源</div>';return;}c.innerHTML=filtered.map((r)=>{let gi=resources.indexOf(r),su=r.url.replace(/^https?:\/\//i,'').substring(0,50);return'<div class="list-item"><div class="item-title"><a href="'+r.url+'" target="_blank" rel="noopener noreferrer" style="color:#a78bfa;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">🔗 '+esc(r.title)+' ↗</a> <span class="tag tag-primary">'+r.category+'</span></div><div class="item-preview">'+esc(su)+(r.url.length>50?'...':'')+'</div><div class="item-meta"><span>'+new Date(r.time).toLocaleString()+'</span><button class="btn btn-sm btn-outline" onclick="event.stopPropagation();editResource(\''+gi+'\')">✏️ 编辑</button></div></div>';}).join('');}
+function editResource(idx){currentResIdx=parseInt(idx);if(resources[idx]){document.getElementById('resTitle').value=resources[idx].title;document.getElementById('resUrl').value=resources[idx].url;document.getElementById('resCategory').value=resources[idx].category;document.getElementById('resTitle').scrollIntoView({behavior:'smooth'});switchPage('resources',document.querySelector('[data-page="resources"]'));}}
+
+// ==================== Flashcards ====================
+function addCard(){let f=document.getElementById('cardFront').value.trim(),b=document.getElementById('cardBack').value.trim();if(!f||!b){alert('请填写正面和背面');return;}flashcards.push({id:genId(),front:f,back:b,time:Date.now()});save('flashcards',flashcards);currentCardIdx=flashcards.length-1;document.getElementById('cardFront').value='';document.getElementById('cardBack').value='';refreshFlashcardDisplay();updateBadges();updateStatsCards();addXP(5,'创建闪卡');toast('✅ 闪卡已保存 +5 XP');}
+function flipCard(){cardFlipped=!cardFlipped;document.getElementById('flashcardEl').classList.toggle('flipped',cardFlipped);if(cardFlipped)addXP(5,'复习闪卡');}
+function nextCard(){cardFlipped=false;document.getElementById('flashcardEl').classList.remove('flipped');currentCardIdx=(currentCardIdx+1)%flashcards.length;refreshFlashcardDisplay();}
+function prevCard(){cardFlipped=false;document.getElementById('flashcardEl').classList.remove('flipped');currentCardIdx=(currentCardIdx-1+flashcards.length)%flashcards.length;refreshFlashcardDisplay();}
+function deleteCard(){if(flashcards.length===0)return;if(confirm('删除这张闪卡？')){flashcards.splice(currentCardIdx,1);save('flashcards',flashcards);if(flashcards.length===0)currentCardIdx=0;else currentCardIdx=Math.min(currentCardIdx,flashcards.length-1);cardFlipped=false;document.getElementById('flashcardEl').classList.remove('flipped');refreshFlashcardDisplay();updateBadges();updateStatsCards();}}
+function refreshFlashcardDisplay(){if(flashcards.length===0){document.getElementById('cardFrontDisplay').innerText='没有闪卡，添加一张吧';document.getElementById('cardBackDisplay').innerText='';document.getElementById('cardCounter').innerText='0 / 0';return;}let c=flashcards[currentCardIdx];document.getElementById('cardFrontDisplay').innerText=c.front;document.getElementById('cardBackDisplay').innerText=c.back;document.getElementById('cardCounter').innerText=(currentCardIdx+1)+' / '+flashcards.length;}
+
+// ==================== Pomodoro (Custom Duration) ====================
+function updateTimerFromSettings(){let wm=parseInt(document.getElementById('workMinutes').value)||25;let bm=parseInt(document.getElementById('breakMinutes').value)||5;if(wm<1)wm=1;if(wm>120)wm=120;if(bm<1)bm=1;if(bm>60)bm=60;document.getElementById('workMinutes').value=wm;document.getElementById('breakMinutes').value=bm;if(!timerRunning){timerSeconds=timerMode==='work'?wm*60:bm*60;updateTimerDisplay();}}
+function setWorkMode(){pauseTimer();timerMode='work';timerSeconds=(parseInt(document.getElementById('workMinutes').value)||25)*60;updateTimerDisplay();document.getElementById('timerRing').classList.remove('break');}
+function setBreakMode(){pauseTimer();timerMode='break';timerSeconds=(parseInt(document.getElementById('breakMinutes').value)||5)*60;updateTimerDisplay();document.getElementById('timerRing').classList.add('break');}
+function startTimer(){if(timerRunning)return;timerRunning=true;document.getElementById('btnStart').style.display='none';document.getElementById('btnPause').style.display='inline-flex';timerInterval=setInterval(function(){if(timerSeconds<=0){clearInterval(timerInterval);timerRunning=false;document.getElementById('btnStart').style.display='inline-flex';document.getElementById('btnPause').style.display='none';if(timerMode==='work'){let wm=parseInt(document.getElementById('workMinutes').value)||25;pomoData.count++;pomoData.minutes+=wm;pomoData.log.unshift('🍅 '+new Date().toLocaleTimeString()+' 完成一个番茄 ('+wm+'分钟)');addXP(50,'完成番茄');refreshGoals();}pomoData.date=new Date().toDateString();save('pomoData',pomoData);refreshPomoDisplay();alert(timerMode==='work'?'🍅 番茄完成！休息一下吧~':'☕ 休息结束！');return;}timerSeconds--;updateTimerDisplay();},1000);}
+function pauseTimer(){if(timerInterval)clearInterval(timerInterval);timerRunning=false;document.getElementById('btnStart').style.display='inline-flex';document.getElementById('btnPause').style.display='none';}
+function resetTimer(){pauseTimer();timerSeconds=timerMode==='work'?(parseInt(document.getElementById('workMinutes').value)||25)*60:(parseInt(document.getElementById('breakMinutes').value)||5)*60;updateTimerDisplay();}
+function updateTimerDisplay(){let m=Math.floor(timerSeconds/60),s=timerSeconds%60;document.getElementById('timerText').innerText=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function refreshPomoDisplay(){document.getElementById('pomoCount').innerText=pomoData.count;document.getElementById('studyMinutes').innerText=pomoData.minutes;document.getElementById('streakDays').innerText=getStreak();let logEl=document.getElementById('pomoLog');logEl.innerHTML=pomoData.log.length===0?'<div class="empty-state">今天还没有番茄记录~</div>':pomoData.log.map(l=>'<div style="padding:5px 0;border-bottom:1px solid var(--border);">'+l+'</div>').join('');}
+
+// ==================== Relax ====================
+function refreshRelax(){
+    let xf=document.getElementById('xhsFrame');
+    // Try embedding Xiaohongshu
+    if(!xf.src){
+        xf.src='https://www.xiaohongshu.com/explore';
+        setTimeout(function(){
+            try{
+                // Check if iframe loaded (will likely be blocked by X-Frame-Options)
+                // If blocked, show fallback
+                document.getElementById('xhsFallback').style.display='flex';
+            }catch(e){}
+        },3000);
     }
+}
+function openXiaohongshu(){window.open('https://www.xiaohongshu.com/explore','_blank','noopener,noreferrer');}
+function refreshXHS(){let xf=document.getElementById('xhsFrame');document.getElementById('xhsFallback').style.display='none';xf.src='';setTimeout(function(){xf.src='https://www.xiaohongshu.com/explore';},100);}
 
-    function getAnswer(q) {
-        q = q.toLowerCase();
-        // 深度学习
-        if (q.includes('cnn') || q.includes('卷积')) return 'CNN（卷积神经网络）擅长处理图像数据，核心操作：卷积提取特征、池化降维、全连接分类。';
-        if (q.includes('rnn') || q.includes('循环')) return 'RNN适合序列数据，如文本、音频、时间序列。常用LSTM和GRU解决梯度消失。';
-        if (q.includes('反向传播') || q.includes('backprop')) return '反向传播通过链式法则计算损失对权重的梯度，更新参数。';
-        if (q.includes('过拟合')) return '过拟合：模型记住了训练数据但泛化差。解决：数据增强、Dropout、正则化、早停。';
-        if (q.includes('梯度下降')) return '梯度下降沿负梯度方向更新参数。变体：SGD、Adam、RMSprop。';
-        if (q.includes('激活函数')) return '常用激活函数：ReLU（最常用）、Sigmoid（二分类）、Tanh、Softmax（多分类）。';
-        if (q.includes('损失函数') || q.includes('loss')) return '损失函数：MSE（回归）、交叉熵（分类）、MAE（鲁棒）。';
-        if (q.includes('transformer')) return 'Transformer基于自注意力机制，是GPT、BERT等大模型的基础架构。';
-        if (q.includes('lstm')) return 'LSTM通过门控机制解决长序列梯度消失，适合时间序列预测。';
-        if (q.includes('dropout')) return 'Dropout训练时随机丢弃神经元，防止过拟合，提升泛化能力。';
-        if (q.includes('学习率')) return '学习率控制更新步长。太大震荡，太小太慢。常用Adam自适应学习率。';
-        if (q.includes('神经网络')) return '神经网络由输入层、隐藏层、输出层组成，通过激活函数实现非线性映射。';
-        // 数据挖掘
-        if (q.includes('数据挖掘')) return '数据挖掘从数据中发现模式。方法：聚类（K-means）、分类（决策树）、关联规则（Apriori）。';
-        if (q.includes('聚类')) return '聚类将相似数据分组。算法：K-means、DBSCAN、层次聚类。';
-        if (q.includes('关联规则')) return '关联规则发现数据关联。经典：啤酒与尿布。算法：Apriori、FP-Growth。';
-        if (q.includes('决策树')) return '决策树是可解释的分类/回归算法，通过特征分裂构建树结构。';
-        if (q.includes('随机森林')) return '随机森林用多棵决策树投票，提高准确率，防止过拟合。';
-        if (q.includes('svm')) return 'SVM寻找最大间隔超平面分类，核函数处理非线性问题。';
-        // 编程工具
-        if (q.includes('pytorch')) return 'PyTorch是Facebook开发的深度学习框架，动态计算图，适合研究。';
-        if (q.includes('tensorflow')) return 'TensorFlow是Google的深度学习框架，适合大规模生产部署。';
-        if (q.includes('pandas')) return 'Pandas提供DataFrame结构，用于数据清洗、转换、聚合分析。';
-        if (q.includes('numpy')) return 'NumPy提供多维数组和矩阵运算，是Python数据科学的基础。';
-        if (q.includes('sklearn') || q.includes('scikit')) return 'Scikit-learn包含分类、回归、聚类等经典机器学习算法。';
-        // 统计学
-        if (q.includes('p值')) return 'P值是原假设成立时观察到当前结果的概率。P<0.05通常显著。';
-        if (q.includes('t检验')) return 'T检验比较两组均值差异。单样本/独立样本/配对t检验。';
-        if (q.includes('方差分析') || q.includes('anova')) return 'ANOVA比较三组及以上均值差异。单因素/双因素ANOVA。';
-        if (q.includes('正态分布')) return '正态分布是钟形曲线。中心极限定理：样本均值趋向正态分布。';
-        if (q.includes('贝叶斯')) return '贝叶斯统计：P(A|B)=P(B|A)P(A)/P(B)。用于朴素贝叶斯分类。';
-        if (q.includes('假设检验')) return '假设检验通过样本判断是否拒绝原假设。t检验、卡方检验等。';
-        // 通用
-        if (q.includes('笑话')) return '🤖 为什么神经网络不谈恋爱？因为它总在过拟合，忘不了前任！';
-        return '我可以回答：深度学习（CNN/RNN/Transformer）、数据挖掘（聚类/分类）、统计学（P值/回归）、编程（PyTorch/Pandas）。换个问题试试？';
+// Breathing Exercise
+function toggleBreath(){
+    if(breathActive){stopBreath();return;}
+    breathActive=true;
+    document.getElementById('btnBreath').innerText='⏸ 停止';
+    let circle=document.getElementById('breathCircle'),text=document.getElementById('breathText');
+    let phase=0; // 0:inhale(4s), 1:hold(7s), 2:exhale(8s)
+    let phases=[{dur:4000,label:'吸气...',scale:'inhale'},{dur:7000,label:'屏息...',scale:''},{dur:8000,label:'呼气...',scale:''}];
+    function runPhase(){
+        if(!breathActive)return;
+        let p=phases[phase];
+        text.innerText=p.label;
+        if(p.scale==='inhale')circle.classList.add('inhale');else circle.classList.remove('inhale');
+        phase=(phase+1)%3;
+        breathInterval=setTimeout(runPhase,p.dur);
     }
+    runPhase();
+}
+function stopBreath(){breathActive=false;if(breathInterval)clearTimeout(breathInterval);document.getElementById('breathCircle').classList.remove('inhale');document.getElementById('breathText').innerText='点击开始';document.getElementById('btnBreath').innerText='▶ 开始呼吸练习';}
 
-    // ==================== 学习看板 ====================
-    function addTask() {
-        let input = document.getElementById('newTaskInput');
-        let text = input.value.trim();
-        if (!text) { alert('请输入任务内容'); return; }
-        tasks.push({ id: genId(), text: text, status: 'todo', time: Date.now() });
-        saveToStorage('tasks', tasks);
-        input.value = '';
-        refreshKanban();
-        updateStatsCards();
+// White Noise (using AudioContext for simple noise generation)
+let audioCtx=null,noiseNode=null,noiseGain=null;
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function stopSound(){
+    if(noiseNode){noiseNode.stop();noiseNode.disconnect();noiseNode=null;}
+    if(noiseGain){noiseGain.disconnect();noiseGain=null;}
+    document.querySelectorAll('#btnRain,#btnForest,#btnOcean,#btnFire').forEach(b=>b.style.background='transparent');
+}
+function playSound(type){
+    stopSound();
+    let ctx=getAudioCtx(),gain=ctx.createGain();gain.gain.value=0.3;gain.connect(ctx.destination);
+    noiseGain=gain;
+    let bufSize=ctx.sampleRate*2,buffer=ctx.createBuffer(1,bufSize,ctx.sampleRate),data=buffer.getChannelData(0);
+    // Generate noise pattern
+    for(let i=0;i<bufSize;i++){
+        let white=Math.random()*2-1;
+        if(type==='rain')data[i]=white*0.6+(Math.sin(i*0.002)*0.4);
+        else if(type==='forest')data[i]=white*0.3+(Math.sin(i*0.001)*0.5+Math.sin(i*0.003)*0.2);
+        else if(type==='ocean')data[i]=white*0.5+(Math.sin(i*0.0008)*0.5);
+        else if(type==='fire')data[i]=white*0.8+(Math.random()<0.02?1:0)*0.2;
     }
+    let source=ctx.createBufferSource();source.buffer=buffer;source.loop=true;
+    source.connect(gain);source.start();noiseNode=source;
+    // Highlight button
+    let btnMap={rain:'btnRain',forest:'btnForest',ocean:'btnOcean',fire:'btnFire'};
+    let btn=document.getElementById(btnMap[type]);
+    if(btn)btn.style.background='rgba(139,92,246,0.3)';
+}
 
-    function moveTask(taskId, toStatus) {
-        let task = tasks.find(t => t.id === taskId);
-        if (task) task.status = toStatus;
-        saveToStorage('tasks', tasks);
-        refreshKanban();
-    }
+// ==================== Stats ====================
+function updateStatsCards(){
+    document.getElementById('statTotalNotes').innerText=allNotes.length;
+    document.getElementById('statTotalTasks').innerText=tasks.length;
+    document.getElementById('statTotalSnippets').innerText=snippets.length;
+    document.getElementById('statTotalResources').innerText=resources.length;
+    document.getElementById('statTotalCards').innerText=flashcards.length;
+}
+function updateChart(){
+    let now=Date.now(),day=86400000,labels=[],counts=[];
+    for(let i=6;i>=0;i--){let s=now-i*day;labels.push(new Date(s).toLocaleDateString());counts.push(allNotes.filter(n=>n.time>=s&&n.time<s+day).length);}
+    let ctx=document.getElementById('myChart').getContext('2d');if(chartObj)chartObj.destroy();
+    chartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'笔记数量',data:counts,backgroundColor:'#8b5cf6',borderRadius:6}]},options:{responsive:true,plugins:{legend:{position:'top',labels:{color:'#aaa'}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888'}}}}});
+}
+function updateTaskChart(){
+    let todoN=tasks.filter(t=>t.status==='todo').length,doingN=tasks.filter(t=>t.status==='doing').length,doneN=tasks.filter(t=>t.status==='done').length;
+    let ctx=document.getElementById('taskChart').getContext('2d');if(taskChartObj)taskChartObj.destroy();
+    taskChartObj=new Chart(ctx,{type:'doughnut',data:{labels:['待办','进行中','已完成'],datasets:[{data:[todoN,doingN,doneN],backgroundColor:['#f59e0b','#8b5cf6','#10b981'],borderRadius:4}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#aaa'}}}}});
+}
 
-    function deleteTask(taskId) {
-        if (!confirm('删除这个任务？')) return;
-        tasks = tasks.filter(t => t.id !== taskId);
-        saveToStorage('tasks', tasks);
-        refreshKanban();
-        updateStatsCards();
-    }
-
-    function refreshKanban() {
-        renderKanbanCol('todoList', 'todo');
-        renderKanbanCol('doingList', 'doing');
-        renderKanbanCol('doneList', 'done');
-        document.getElementById('todoCount').innerText = tasks.filter(t => t.status === 'todo').length;
-        document.getElementById('doingCount').innerText = tasks.filter(t => t.status === 'doing').length;
-        document.getElementById('doneCount').innerText = tasks.filter(t => t.status === 'done').length;
-    }
-
-    function renderKanbanCol(containerId, status) {
-        let c = document.getElementById(containerId);
-        c.innerHTML = '';
-        tasks.filter(t => t.status === status).forEach(t => {
-            let div = document.createElement('div');
-            div.className = 'kanban-task ' + (status === 'done' ? 'done' : '');
-            div.innerHTML = '<span>' + t.text + '</span>'
-                + '<span class="task-actions">'
-                + (status !== 'todo' ? '<button class="small" onclick="moveTask(\''+t.id+'\',\'todo\')">←</button>' : '')
-                + (status !== 'doing' ? '<button class="small success" onclick="moveTask(\''+t.id+'\',\'doing\')">▶</button>' : '')
-                + (status !== 'done' ? '<button class="small success" onclick="moveTask(\''+t.id+'\',\'done\')">✓</button>' : '')
-                + '<button class="small danger" onclick="deleteTask(\''+t.id+'\')">✕</button>'
-                + '</span>';
-            c.appendChild(div);
-        });
-    }
-
-    // ==================== 代码运行引擎 ====================
-    function runJS(code) {
-        let output = [];
-        let origLog = console.log;
-        console.log = function() {
-            let args = Array.from(arguments).map(function(a) {
-                if (a === null) return 'null';
-                if (a === undefined) return 'undefined';
-                if (typeof a === 'object') {
-                    try { return JSON.stringify(a, null, 2); } catch(e) { return String(a); }
-                }
-                return String(a);
-            });
-            output.push(args.join(' '));
-        };
-        try {
-            let result = eval(code);
-            if (result !== undefined) {
-                output.push('=> ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)));
-            }
-        } catch (e) {
-            output.push('Error: ' + e.message);
-        }
-        console.log = origLog;
-        return output.length > 0 ? output.join('\n') : '代码执行成功（无输出）';
-    }
-
-    function runPython(code) {
-        return new Promise(function(resolve) {
-            let output = [];
-            Sk.configure({
-                output: function(text) { output.push(text); },
-                read: function(x) {
-                    if (Sk.builtinFiles && Sk.builtinFiles['files'][x]) {
-                        return Sk.builtinFiles['files'][x];
-                    }
-                    throw 'File not found: ' + x;
-                }
-            });
-            Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody('<stdin>', false, code, true);
-            }).then(
-                function() { resolve(output.join('') || '代码执行成功（无输出）'); },
-                function(e) { resolve('Error: ' + (e.toString ? e.toString() : String(e))); }
-            );
-        });
-    }
-
-    function runSnippet() {
-        let code = document.getElementById('snippetCode').value;
-        let lang = document.getElementById('snippetLang').value;
-        let out = document.getElementById('codeOutput');
-        if (!code.trim()) { out.className = 'code-output show'; out.innerHTML = '<div class="output-error">⚠️ 请先输入代码</div>'; return; }
-        out.className = 'code-output show';
-        if (lang === 'javascript') {
-            out.innerHTML = '<div class="output-label">▶ 运行结果（JavaScript）：</div>';
-            let result = runJS(code);
-            let isErr = result.indexOf('Error:') === 0;
-            out.innerHTML += '<div class="' + (isErr ? 'output-error' : '') + '">' + escapeHtml(result) + '</div>';
-        } else if (lang === 'python') {
-            out.innerHTML = '<div class="output-label">▶ 运行结果（Python）：</div><div class="output-loading">代码运行中...</div>';
-            runPython(code).then(function(result) {
-                let isErr = result.indexOf('Error:') === 0;
-                out.innerHTML = '<div class="output-label">▶ 运行结果（Python）：</div><div class="' + (isErr ? 'output-error' : '') + '">' + escapeHtml(result) + '</div>';
-            });
-        } else {
-            out.innerHTML = '<div class="output-error">⚠️ 其他语言暂不支持在线运行</div>';
-        }
-    }
-
-    function escapeHtml(str) {
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // ==================== 代码片段 ====================
-    function showSnippetInEditor() {
-        document.getElementById('codeOutput').className = 'code-output';
-        document.getElementById('codeOutput').innerHTML = '';
-        if (currentSnippetIdx >= 0 && snippets[currentSnippetIdx]) {
-            let s = snippets[currentSnippetIdx];
-            document.getElementById('snippetTitle').value = s.title || '';
-            document.getElementById('snippetCode').value = s.code || '';
-            document.getElementById('snippetLang').value = s.lang || 'python';
-        }
-    }
-
-    function saveSnippet() {
-        let title = document.getElementById('snippetTitle').value.trim();
-        let code = document.getElementById('snippetCode').value;
-        let lang = document.getElementById('snippetLang').value;
-        if (!title) title = '未命名片段';
-        if (!code.trim()) { alert('请输入代码'); return; }
-        if (currentSnippetIdx >= 0 && snippets[currentSnippetIdx]) {
-            snippets[currentSnippetIdx].title = title;
-            snippets[currentSnippetIdx].code = code;
-            snippets[currentSnippetIdx].lang = lang;
-            snippets[currentSnippetIdx].time = Date.now();
-        } else {
-            snippets.unshift({ id: genId(), title: title, code: code, lang: lang, time: Date.now() });
-            currentSnippetIdx = 0;
-        }
-        saveToStorage('snippets', snippets);
-        refreshSnippetsList();
-        updateStatsCards();
-        alert('✅ 代码片段已保存');
-    }
-
-    function deleteSnippet() {
-        if (snippets.length === 0) return;
-        if (confirm('删除这个代码片段？')) {
-            snippets.splice(currentSnippetIdx, 1);
-            saveToStorage('snippets', snippets);
-            currentSnippetIdx = snippets.length > 0 ? 0 : -1;
-            if (currentSnippetIdx >= 0) showSnippetInEditor();
-            else { document.getElementById('snippetTitle').value=''; document.getElementById('snippetCode').value=''; }
-            refreshSnippetsList();
-            updateStatsCards();
-        }
-    }
-
-    function refreshSnippetsList() {
-        let c = document.getElementById('snippetsList');
-        c.innerHTML = '';
-        let langLabels = { python: 'py', javascript: 'js', other: 'other' };
-        let langClass = { python: 'lang-py', javascript: 'lang-js', other: 'lang-other' };
-        snippets.forEach((s, i) => {
-            let div = document.createElement('div');
-            div.className = 'list-item';
-            div.innerHTML = '<div class="item-title"><span class="lang-badge '+(langClass[s.lang]||'lang-other')+'">'+(langLabels[s.lang]||s.lang)+'</span> ' + s.title + '</div>'
-                + '<div class="code-preview">' + s.code.substring(0, 100) + (s.code.length>100?'...':'') + '</div>'
-                + '<div class="item-meta">' + new Date(s.time).toLocaleString()
-                + ' <button class="small success" style="float:right;margin:0;" '
-                + 'onclick="event.stopPropagation();currentSnippetIdx='+i+';showSnippetInEditor();runSnippet()">▶ 运行</button>'
-                + '</div>';
-            div.onclick = () => { currentSnippetIdx = i; showSnippetInEditor(); };
-            c.appendChild(div);
-        });
-    }
-
-    // ==================== 番茄钟 ====================
-    function setTimerMode(mode) {
-        pauseTimer();
-        timerMode = mode;
-        timerSeconds = mode === 'work' ? 25 * 60 : 5 * 60;
-        updateTimerDisplay();
-        document.getElementById('timerCircle').classList.toggle('break', mode === 'break');
-    }
-
-    function startTimer() {
-        if (timerRunning) return;
-        timerRunning = true;
-        document.getElementById('btnStart').style.display = 'none';
-        document.getElementById('btnPause').style.display = 'inline-block';
-        timerInterval = setInterval(() => {
-            if (timerSeconds <= 0) {
-                clearInterval(timerInterval);
-                timerRunning = false;
-                document.getElementById('btnStart').style.display = 'inline-block';
-                document.getElementById('btnPause').style.display = 'none';
-                if (timerMode === 'work') {
-                    pomoData.count++;
-                    pomoData.minutes += 25;
-                    pomoData.log.unshift('🍅 ' + new Date().toLocaleTimeString() + ' 完成一个番茄');
-                }
-                pomoData.date = new Date().toDateString();
-                saveToStorage('pomoData', pomoData);
-                refreshPomoDisplay();
-                alert(timerMode === 'work' ? '🍅 番茄完成！休息一下吧~' : '☕ 休息结束！开始新的番茄吧~');
-                return;
-            }
-            timerSeconds--;
-            updateTimerDisplay();
-        }, 1000);
-    }
-
-    function pauseTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        timerRunning = false;
-        document.getElementById('btnStart').style.display = 'inline-block';
-        document.getElementById('btnPause').style.display = 'none';
-    }
-
-    function resetTimer() {
-        pauseTimer();
-        timerSeconds = timerMode === 'work' ? 25 * 60 : 5 * 60;
-        updateTimerDisplay();
-    }
-
-    function updateTimerDisplay() {
-        let m = Math.floor(timerSeconds / 60);
-        let s = timerSeconds % 60;
-        document.getElementById('timerText').innerText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    }
-
-    function refreshPomoDisplay() {
-        document.getElementById('pomoCount').innerText = pomoData.count;
-        document.getElementById('studyMinutes').innerText = pomoData.minutes;
-        // 连续天数（简化：只要有记录就算）
-        let stored = localStorage.getItem(storageKey('pomoDaily'));
-        let dailyLog = stored ? JSON.parse(stored) : [];
-        let today = new Date().toDateString();
-        if (!dailyLog.includes(today) && pomoData.count > 0) {
-            dailyLog.push(today);
-            saveToStorage('pomoDaily', dailyLog);
-        }
-        let streak = 0;
-        let check = new Date();
-        for (let i = 0; i < 365; i++) {
-            if (dailyLog.includes(check.toDateString())) { streak++; check.setDate(check.getDate()-1); }
-            else break;
-        }
-        document.getElementById('streakDays').innerText = streak;
-        // 日志
-        let logEl = document.getElementById('pomoLog');
-        logEl.innerHTML = pomoData.log.length === 0 ? '<div style="color:#999;">今天还没有番茄记录~</div>'
-            : pomoData.log.map(l => '<div style="padding:4px 0;border-bottom:1px solid #eee;">'+l+'</div>').join('');
-    }
-
-    // ==================== 知识资源 ====================
-    function saveResource() {
-        let title = document.getElementById('resTitle').value.trim();
-        let url = document.getElementById('resUrl').value.trim();
-        let category = document.getElementById('resCategory').value;
-        if (!title) { alert('请输入资源名称'); return; }
-        if (!url) { alert('请输入资源链接'); return; }
-        // 自动补全协议
-        if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
-        if (currentResIdx >= 0 && resources[currentResIdx]) {
-            resources[currentResIdx].title = title;
-            resources[currentResIdx].url = url;
-            resources[currentResIdx].category = category;
-            resources[currentResIdx].time = Date.now();
-        } else {
-            resources.unshift({ id: genId(), title: title, url: url, category: category, time: Date.now() });
-            currentResIdx = 0;
-        }
-        saveToStorage('resources', resources);
-        refreshResourcesList();
-        updateStatsCards();
-        document.getElementById('resUrl').value = url;
-        alert('✅ 资源已收藏');
-    }
-
-    function deleteResource() {
-        if (resources.length === 0) return;
-        if (confirm('删除这个资源？')) {
-            resources.splice(currentResIdx, 1);
-            saveToStorage('resources', resources);
-            currentResIdx = resources.length > 0 ? 0 : -1;
-            refreshResourcesList();
-            updateStatsCards();
-        }
-    }
-
-    function filterResources(cat) {
-        resourceFilter = cat;
-        refreshResourcesList();
-    }
-
-    function refreshResourcesList() {
-        let c = document.getElementById('resourcesList');
-        c.innerHTML = '';
-        let filtered = resourceFilter === '全部' ? resources : resources.filter(r => r.category === resourceFilter);
-        if (filtered.length === 0) { c.innerHTML = '<div style="color:#999;text-align:center;padding:20px;">暂无资源</div>'; return; }
-        filtered.forEach((r, i) => {
-            let globalIdx = resources.indexOf(r);
-            let div = document.createElement('div');
-            div.className = 'list-item';
-            let shortUrl = r.url.replace(/^https?:\/\//i, '').substring(0, 45);
-            div.innerHTML = '<div class="item-title">'
-                + '<a href="' + r.url + '" target="_blank" rel="noopener noreferrer" '
-                + 'style="color:#667eea;text-decoration:none;" '
-                + 'onmouseover="this.style.textDecoration=\'underline\'" '
-                + 'onmouseout="this.style.textDecoration=\'none\'">'
-                + '🔗 ' + r.title + ' ↗</a> '
-                + '<span class="keyword-tag">' + r.category + '</span></div>'
-                + '<div class="item-preview" style="color:#888;">' + shortUrl + (r.url.length>45?'...':'') + '</div>'
-                + '<div class="item-meta">' + new Date(r.time).toLocaleString()
-                + ' <button class="small" style="float:right;margin:0;" '
-                + 'onclick="event.stopPropagation();editResource(\'' + globalIdx + '\')">✏️ 编辑</button>'
-                + '</div>';
-            c.appendChild(div);
-        });
-    }
-
-    function editResource(idx) {
-        currentResIdx = idx;
-        if (resources[idx]) {
-            document.getElementById('resTitle').value = resources[idx].title;
-            document.getElementById('resUrl').value = resources[idx].url;
-            document.getElementById('resCategory').value = resources[idx].category;
-            // 自动滚动到添加表单
-            document.getElementById('resTitle').scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    // ==================== 数据统计 ====================
-    function updateStatsCards() {
-        document.getElementById('statTotalNotes').innerText = allNotes.length;
-        document.getElementById('statTotalTasks').innerText = tasks.length;
-        document.getElementById('statTotalSnippets').innerText = snippets.length;
-        document.getElementById('statTotalResources').innerText = resources.length;
-    }
-
-    function updateChart() {
-        let now = Date.now(), day = 86400000;
-        let labels = [], counts = [];
-        for (let i = 6; i >= 0; i--) {
-            let start = now - i * day;
-            labels.push(new Date(start).toLocaleDateString());
-            counts.push(allNotes.filter(n => n.time >= start && n.time < start + day).length);
-        }
-        let ctx = document.getElementById('myChart').getContext('2d');
-        if (chartObj) chartObj.destroy();
-        chartObj = new Chart(ctx, {
-            type: 'bar',
-            data: { labels, datasets: [{ label: '笔记数量', data: counts, backgroundColor: '#667eea', borderRadius: 6 }] },
-            options: { responsive: true, plugins: { legend: { position: 'top' } } }
-        });
-    }
-
-    function updateTaskChart() {
-        let todoN = tasks.filter(t => t.status === 'todo').length;
-        let doingN = tasks.filter(t => t.status === 'doing').length;
-        let doneN = tasks.filter(t => t.status === 'done').length;
-        let ctx = document.getElementById('taskChart').getContext('2d');
-        if (taskChartObj) taskChartObj.destroy();
-        taskChartObj = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['待办', '进行中', '已完成'],
-                datasets: [{
-                    data: [todoN, doingN, doneN],
-                    backgroundColor: ['#f59e0b', '#667eea', '#10b981'],
-                    borderRadius: 4
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-        });
-    }
-
-    // 初始化
-    window.onload = function() { updateStatsCards(); };
+window.onload=function(){updateStatsCards();};
 </script>
 </body>
 </html>
