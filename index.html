@@ -5,195 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep Learner Hub</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* ====== 登录界面 ====== */
         .login-box {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            margin-top: 100px;
+            background: white; border-radius: 20px; padding: 40px;
+            text-align: center; margin-top: 80px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .login-box input {
-            padding: 12px 20px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            margin: 20px 10px;
-            width: 200px;
+            padding: 12px 20px; font-size: 16px; border: 1px solid #ddd;
+            border-radius: 10px; margin: 20px 10px; width: 220px;
         }
         .login-box button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
+            background: #667eea; color: white; border: none; padding: 12px 30px;
+            border-radius: 10px; cursor: pointer; font-size: 16px;
         }
+        .login-box button:hover { opacity: 0.9; }
+
+        /* ====== 主界面 ====== */
         .main-box {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none; background: white; border-radius: 20px;
+            padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 15px; border-bottom: 2px solid #eee; margin-bottom: 15px;
+            flex-wrap: wrap; gap: 10px;
         }
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .title { font-size: 22px; font-weight: bold; color: #667eea; }
         .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
+            background: #ef4444; color: white; border: none; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer;
         }
-        .row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+        .logout-btn:hover { opacity: 0.9; }
+
+        /* ====== Tab 导航 ====== */
+        .tab-nav {
+            display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 20px;
+            border-bottom: 2px solid #eee; padding-bottom: 2px;
         }
-        .col {
-            flex: 1;
-            min-width: 250px;
+        .tab-btn {
+            padding: 10px 18px; border: none; background: transparent;
+            cursor: pointer; font-size: 14px; border-radius: 10px 10px 0 0;
+            color: #666; transition: all 0.2s;
         }
+        .tab-btn:hover { background: #f0f0f0; color: #333; }
+        .tab-btn.active { background: #667eea; color: white; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ====== 通用组件 ====== */
+        .row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 260px; }
+        .col-half { flex: 0 0 calc(50% - 10px); min-width: 260px; }
         .card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px;
         }
-        .card h3 {
-            margin-bottom: 15px;
-            color: #333;
+        .card h3 { margin-bottom: 12px; color: #333; font-size: 16px; }
+        .card input[type="text"], .card textarea, .card select {
+            width: 100%; padding: 10px; border: 1px solid #ddd;
+            border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 8px;
         }
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-family: monospace;
-            resize: vertical;
-        }
+        .card textarea { height: 130px; resize: vertical; }
         button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-            margin-right: 8px;
+            background: #667eea; color: white; border: none; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; margin-top: 6px; margin-right: 6px;
+            font-size: 13px; transition: opacity 0.2s;
         }
-        button.danger {
-            background: #ef4444;
+        button:hover { opacity: 0.85; }
+        button.danger { background: #ef4444; }
+        button.success { background: #10b981; }
+        button.warn { background: #f59e0b; }
+        button.small { padding: 5px 10px; font-size: 11px; margin-top: 2px; }
+        .notes-list, .snippet-list, .resource-list {
+            max-height: 220px; overflow-y: auto;
         }
-        .note-item {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border: 1px solid #eee;
+        .list-item {
+            background: white; padding: 10px 12px; border-radius: 8px;
+            margin-bottom: 6px; cursor: pointer; border: 1px solid #eee;
+            font-size: 13px; transition: background 0.15s;
         }
-        .note-item:hover {
-            background: #e9ecef;
+        .list-item:hover { background: #e9ecef; }
+        .list-item .item-title { font-weight: bold; margin-bottom: 3px; }
+        .list-item .item-preview { color: #666; font-size: 12px; }
+        .list-item .item-meta { font-size: 11px; color: #999; margin-top: 3px; }
+        .keyword-tag {
+            display: inline-block; background: #667eea; color: white;
+            padding: 2px 8px; border-radius: 12px; font-size: 10px; margin: 2px;
         }
+
+        /* ====== 聊天区 ====== */
         .chat-area {
-            background: white;
-            border-radius: 10px;
-            height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
+            background: white; border-radius: 10px; height: 280px; overflow-y: auto;
+            padding: 10px; margin-bottom: 10px; border: 1px solid #ddd;
         }
         .chat-msg {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            max-width: 85%;
-            word-wrap: break-word;
+            margin-bottom: 10px; padding: 8px 12px; border-radius: 10px;
+            max-width: 85%; word-wrap: break-word; font-size: 13px;
         }
-        .user-msg {
-            background: #667eea;
-            color: white;
-            text-align: right;
-            margin-left: auto;
-        }
-        .bot-msg {
-            background: #e9ecef;
-            color: #333;
-        }
-        .chat-input {
-            display: flex;
-            gap: 10px;
-        }
+        .user-msg { background: #667eea; color: white; text-align: right; margin-left: auto; }
+        .bot-msg { background: #e9ecef; color: #333; }
+        .chat-input { display: flex; gap: 10px; }
         .chat-input input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px;
         }
-        canvas {
-            max-width: 100%;
-            margin-top: 10px;
+
+        /* ====== 看板 ====== */
+        .kanban-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .kanban-col {
+            flex: 1; min-width: 200px; background: #fff; border-radius: 12px;
+            padding: 12px; border: 2px dashed #ddd;
         }
-        .keyword-tag {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            margin: 2px;
+        .kanban-col h4 { text-align: center; margin-bottom: 10px; color: #555; font-size: 14px; }
+        .kanban-task {
+            background: #f0f4ff; padding: 10px; border-radius: 8px; margin-bottom: 8px;
+            cursor: grab; font-size: 13px; display: flex; justify-content: space-between;
+            align-items: center; border-left: 3px solid #667eea;
         }
-        .notes-list {
-            max-height: 200px;
-            overflow-y: auto;
+        .kanban-task.done { opacity: 0.6; text-decoration: line-through; border-left-color: #10b981; }
+        .kanban-task .task-actions { display: flex; gap: 4px; }
+        .kanban-task .task-actions button { padding: 3px 6px; font-size: 10px; margin: 0; }
+
+        /* ====== 番茄钟 ====== */
+        .timer-display {
+            text-align: center; padding: 25px;
         }
+        .timer-circle {
+            width: 160px; height: 160px; border-radius: 50%; border: 8px solid #667eea;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
+            font-size: 36px; font-weight: bold; color: #333; font-family: monospace;
+            transition: border-color 0.3s;
+        }
+        .timer-circle.break { border-color: #10b981; }
+        .timer-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .timer-stats { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
+        .timer-stat {
+            text-align: center; padding: 10px 15px; background: white; border-radius: 10px;
+        }
+        .timer-stat .num { font-size: 24px; font-weight: bold; color: #667eea; }
+        .timer-stat .label { font-size: 11px; color: #999; }
+
+        /* ====== 代码片段 ====== */
+        .code-preview {
+            background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;
+            white-space: pre-wrap; max-height: 120px; overflow-y: auto; margin: 5px 0;
+        }
+        .lang-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            font-size: 10px; font-weight: bold; margin-right: 4px;
+        }
+        .lang-py { background: #3776ab; color: white; }
+        .lang-js { background: #f7df1e; color: #333; }
+        .lang-other { background: #6b7280; color: white; }
+
+        /* ====== 统计卡片 ====== */
+        .stats-cards { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .stat-card {
+            flex: 1; min-width: 140px; background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border-radius: 12px; padding: 15px; text-align: center;
+        }
+        .stat-card .stat-num { font-size: 28px; font-weight: bold; }
+        .stat-card .stat-label { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+        .stat-card.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-card.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-card.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        /* ====== 响应式 ====== */
         @media (max-width: 768px) {
-            .row {
-                flex-direction: column;
-            }
+            .row { flex-direction: column; }
+            .col-half { flex: 1 1 100%; }
+            .kanban-row { flex-direction: column; }
+            .tab-btn { padding: 8px 10px; font-size: 12px; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="container">
-    <!-- 登录界面 -->
+    <!-- ==================== 登录界面 ==================== -->
     <div id="loginPanel" class="login-box">
         <h1>📓 Deep Learner Hub</h1>
-        <p style="margin: 15px 0; color: #666;">深度学习笔记 + 智能问答助手</p>
+        <p style="margin: 15px 0; color: #666;">深度学习笔记 + 智能问答 + 学习管理</p>
         <p style="margin: 10px 0; font-size: 12px;">
             <span class="keyword-tag">GitHub</span>
             <span class="keyword-tag">Cloud Base</span>
@@ -204,67 +206,269 @@
             <span class="keyword-tag">Deep Learner</span>
             <span class="keyword-tag">Google Auth</span>
             <span class="keyword-tag">客户端同步</span>
+            <span class="keyword-tag">看板</span>
+            <span class="keyword-tag">番茄钟</span>
         </p>
         <input type="text" id="username" placeholder="输入你的名字" value="深度学习er">
         <br>
         <button onclick="doLogin()">🚀 开始使用</button>
     </div>
 
-    <!-- 主界面 -->
+    <!-- ==================== 主界面 ==================== -->
     <div id="mainPanel" class="main-box">
+        <!-- 顶部 Header -->
         <div class="header">
-            <div class="title">🧠 Deep Learner Hub | mnitv · DLerV</div>
+            <div class="header-left">
+                <div class="title">🧠 Deep Learner Hub | mnitv · DLerV</div>
+            </div>
             <div>
                 <span id="displayName" style="margin-right: 15px;"></span>
                 <button class="logout-btn" onclick="doLogout()">退出</button>
             </div>
         </div>
 
-        <div class="row">
-            <!-- 左侧：记录本 -->
-            <div class="col">
-                <div class="card">
-                    <h3>📝 记录本</h3>
-                    <textarea id="noteContent" placeholder="写你的深度学习笔记..."></textarea>
-                    <div>
-                        <button onclick="saveNote()">💾 保存</button>
-                        <button class="danger" onclick="deleteNote()">🗑️ 删除</button>
-                    </div>
-                    <h4 style="margin: 15px 0 10px 0;">历史笔记</h4>
-                    <div id="notesList" class="notes-list"></div>
-                </div>
-            </div>
+        <!-- Tab 导航 -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('notes')">📝 笔记管理</button>
+            <button class="tab-btn" onclick="switchTab('kanban')">📋 学习看板</button>
+            <button class="tab-btn" onclick="switchTab('snippets')">💻 代码片段</button>
+            <button class="tab-btn" onclick="switchTab('pomodoro')">⏱️ 专注计时</button>
+            <button class="tab-btn" onclick="switchTab('resources')">📚 知识资源</button>
+            <button class="tab-btn" onclick="switchTab('stats')">📊 数据统计</button>
+        </div>
 
-            <!-- 右侧：智能客服 -->
-            <div class="col">
-                <div class="card">
-                    <h3>🤖 智能客服</h3>
-                    <div id="chatArea" class="chat-area">
-                        <div class="chat-msg bot-msg">👋 你好！我是智能助手，可以问我任何问题：深度学习、数据挖掘、统计学、编程等~</div>
+        <!-- ==================== Tab 1: 笔记管理 ==================== -->
+        <div id="panel-notes" class="tab-panel active">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>📝 记录本</h3>
+                        <input type="text" id="noteTitle" placeholder="笔记标题（可选）" style="font-family:Arial;font-size:14px;">
+                        <textarea id="noteContent" placeholder="写你的深度学习笔记..."></textarea>
+                        <div>
+                            <button onclick="saveNote()">💾 保存</button>
+                            <button class="danger" onclick="deleteNote()">🗑️ 删除</button>
+                            <button class="success" onclick="newNote()">➕ 新建</button>
+                        </div>
+                        <h4 style="margin: 15px 0 10px 0;">📂 历史笔记</h4>
+                        <div id="notesList" class="notes-list"></div>
                     </div>
-                    <div class="chat-input">
-                        <input type="text" id="question" placeholder="随便问什么都可以..." onkeypress="if(event.key==='Enter') ask()">
-                        <button onclick="ask()">发送</button>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>🤖 智能客服</h3>
+                        <div id="chatArea" class="chat-area">
+                            <div class="chat-msg bot-msg">👋 你好！我是智能助手，可以问我任何问题：深度学习、数据挖掘、统计学、编程等~</div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="question" placeholder="随便问什么都可以..." onkeypress="if(event.key==='Enter') ask()">
+                            <button onclick="ask()">发送</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 数据挖掘可视化 -->
-        <div class="card">
-            <h3>📊 数据挖掘 - 笔记统计分析</h3>
-            <canvas id="myChart" width="400" height="200"></canvas>
-            <p style="font-size: 12px; color: #666; margin-top: 10px;">最近7天笔记数量变化 | 数据挖掘 + 可视化</p>
+        <!-- ==================== Tab 2: 学习看板 ==================== -->
+        <div id="panel-kanban" class="tab-panel">
+            <div class="card">
+                <h3>📋 学习任务看板</h3>
+                <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
+                    <input type="text" id="newTaskInput" placeholder="添加新任务..." style="flex:1;min-width:200px;padding:10px;border:1px solid #ddd;border-radius:10px;">
+                    <button onclick="addTask()">➕ 添加任务</button>
+                </div>
+                <div class="kanban-row">
+                    <div class="kanban-col">
+                        <h4>📌 待办 (<span id="todoCount">0</span>)</h4>
+                        <div id="todoList"></div>
+                    </div>
+                    <div class="kanban-col">
+                        <h4>🔄 进行中 (<span id="doingCount">0</span>)</h4>
+                        <div id="doingList"></div>
+                    </div>
+                    <div class="kanban-col">
+                        <h4>✅ 已完成 (<span id="doneCount">0</span>)</h4>
+                        <div id="doneList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 3: 代码片段 ==================== -->
+        <div id="panel-snippets" class="tab-panel">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>💻 新建代码片段</h3>
+                        <input type="text" id="snippetTitle" placeholder="代码片段名称（如：CNN模型定义）" style="font-family:Arial;">
+                        <select id="snippetLang" style="padding:10px;border:1px solid #ddd;border-radius:10px;">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="other">其他</option>
+                        </select>
+                        <textarea id="snippetCode" placeholder="粘贴代码...&#10;&#10;例如：&#10;import torch&#10;model = torch.nn.Sequential(...)"></textarea>
+                        <div>
+                            <button onclick="saveSnippet()">💾 保存片段</button>
+                            <button class="danger" onclick="deleteSnippet()">🗑️ 删除选中</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>📂 代码片段库</h3>
+                        <div id="snippetsList" class="snippet-list" style="max-height:350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 4: 番茄钟 ==================== -->
+        <div id="panel-pomodoro" class="tab-panel">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>⏱️ 番茄钟</h3>
+                        <div class="timer-display">
+                            <div class="timer-circle" id="timerCircle">
+                                <span id="timerText">25:00</span>
+                            </div>
+                            <div>
+                                <button onclick="setTimerMode('work')" id="btnWork" class="success">🍅 工作 25分钟</button>
+                                <button onclick="setTimerMode('break')" id="btnBreak" class="warn">☕ 休息 5分钟</button>
+                            </div>
+                            <div class="timer-controls" style="margin-top: 12px;">
+                                <button onclick="startTimer()" id="btnStart" class="success">▶ 开始</button>
+                                <button onclick="pauseTimer()" id="btnPause" class="warn" style="display:none;">⏸ 暂停</button>
+                                <button onclick="resetTimer()" class="danger">🔄 重置</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>📈 今日统计</h3>
+                        <div class="timer-stats">
+                            <div class="timer-stat">
+                                <div class="num" id="pomoCount">0</div>
+                                <div class="label">完成番茄数</div>
+                            </div>
+                            <div class="timer-stat">
+                                <div class="num" id="studyMinutes">0</div>
+                                <div class="label">专注分钟</div>
+                            </div>
+                            <div class="timer-stat">
+                                <div class="num" id="streakDays">0</div>
+                                <div class="label">连续学习天数</div>
+                            </div>
+                        </div>
+                        <h4 style="margin-top:15px;">📋 今日记录</h4>
+                        <div id="pomoLog" style="max-height:150px;overflow-y:auto;font-size:12px;color:#666;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 5: 知识资源 ==================== -->
+        <div id="panel-resources" class="tab-panel">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>🔗 添加学习资源</h3>
+                        <input type="text" id="resTitle" placeholder="资源名称（如：吴恩达深度学习课程）" style="font-family:Arial;">
+                        <input type="text" id="resUrl" placeholder="资源链接（如：https://...）" style="font-family:Arial;">
+                        <select id="resCategory" style="padding:10px;border:1px solid #ddd;border-radius:10px;margin-bottom:8px;">
+                            <option value="课程">📖 课程</option>
+                            <option value="论文">📄 论文</option>
+                            <option value="教程">📝 教程</option>
+                            <option value="工具">🛠️ 工具</option>
+                            <option value="数据集">📊 数据集</option>
+                            <option value="其他">📌 其他</option>
+                        </select>
+                        <div>
+                            <button onclick="saveResource()">💾 收藏资源</button>
+                            <button class="danger" onclick="deleteResource()">🗑️ 删除选中</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>📚 资源收藏夹</h3>
+                        <div style="margin-bottom:10px;display:flex;gap:4px;flex-wrap:wrap;" id="resFilter">
+                            <button class="small" onclick="filterResources('全部')">全部</button>
+                            <button class="small" onclick="filterResources('课程')">📖 课程</button>
+                            <button class="small" onclick="filterResources('论文')">📄 论文</button>
+                            <button class="small" onclick="filterResources('教程')">📝 教程</button>
+                            <button class="small" onclick="filterResources('工具')">🛠️ 工具</button>
+                            <button class="small" onclick="filterResources('数据集')">📊 数据集</button>
+                        </div>
+                        <div id="resourcesList" class="resource-list" style="max-height:280px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 6: 数据统计 ==================== -->
+        <div id="panel-stats" class="tab-panel">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-num" id="statTotalNotes">0</div>
+                    <div class="stat-label">📝 总笔记数</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-num" id="statTotalTasks">0</div>
+                    <div class="stat-label">📋 总任务数</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-num" id="statTotalSnippets">0</div>
+                    <div class="stat-label">💻 代码片段</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-num" id="statTotalResources">0</div>
+                    <div class="stat-label">📚 资源收藏</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-half">
+                    <div class="card">
+                        <h3>📊 笔记数量趋势（近7天）</h3>
+                        <canvas id="myChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-half">
+                    <div class="card">
+                        <h3>📈 学习任务完成率</h3>
+                        <canvas id="taskChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // ========== 全局变量 ==========
     let currentUser = null;
-    let allNotes = [];
-    let currentIndex = -1;
+    let allNotes = [];           // 笔记 [{id, content, title, time}]
+    let currentNoteIndex = -1;
     let chartObj = null;
+    let taskChartObj = null;
 
+    // 新增板块数据
+    let tasks = [];              // 任务 [{id, text, status: 'todo'|'doing'|'done', time}]
+    let snippets = [];           // 代码片段 [{id, title, code, lang, time}]
+    let currentSnippetIdx = -1;
+    let resources = [];          // 资源 [{id, title, url, category, time}]
+    let currentResIdx = -1;
+    let resourceFilter = '全部';
+
+    // 番茄钟
+    let timerInterval = null;
+    let timerSeconds = 25 * 60;  // 默认 25 分钟
+    let timerRunning = false;
+    let timerMode = 'work';      // 'work' | 'break'
+    let pomoData = { count: 0, minutes: 0, log: [], date: '' };
+
+    // ========== 用户登录/登出 ==========
     function doLogin() {
         let name = document.getElementById('username').value.trim();
         if (!name) name = "学习者";
@@ -272,197 +476,506 @@
         document.getElementById('displayName').innerText = name + " 👋";
         document.getElementById('loginPanel').style.display = 'none';
         document.getElementById('mainPanel').style.display = 'block';
-        loadData();
+        loadAllData();
     }
 
     function doLogout() {
+        pauseTimer();
         currentUser = null;
         document.getElementById('loginPanel').style.display = 'block';
         document.getElementById('mainPanel').style.display = 'none';
     }
 
-    function loadData() {
-        let key = 'notes_' + currentUser.id;
-        let stored = localStorage.getItem(key);
+    // ========== Tab 切换 ==========
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('panel-' + tabName).classList.add('active');
+
+        if (tabName === 'stats') { updateChart(); updateTaskChart(); updateStatsCards(); }
+        if (tabName === 'pomodoro') refreshPomoDisplay();
+        if (tabName === 'kanban') refreshKanban();
+    }
+
+    // ========== 数据加载/保存 ==========
+    function storageKey(prefix) { return prefix + '_' + currentUser.id; }
+
+    function loadAllData() {
+        // 笔记
+        let stored = localStorage.getItem(storageKey('notes'));
+        allNotes = stored ? JSON.parse(stored) : [
+            { id: genId(), title: '深度学习入门', content: '深度学习是机器学习的子集，基于神经网络。', time: Date.now() - 2*86400000 },
+            { id: genId(), title: 'CNN 笔记', content: 'CNN卷积神经网络：卷积层、池化层、全连接层。', time: Date.now() - 86400000 },
+            { id: genId(), title: '反向传播', content: '反向传播是训练神经网络的核心算法。', time: Date.now() }
+        ];
+        if (!localStorage.getItem(storageKey('notes'))) saveToStorage('notes', allNotes);
+
+        // 任务
+        stored = localStorage.getItem(storageKey('tasks'));
+        tasks = stored ? JSON.parse(stored) : [
+            { id: genId(), text: '学习CNN反向传播推导', status: 'doing', time: Date.now() - 3600000 },
+            { id: genId(), text: '完成吴恩达课程第3周', status: 'todo', time: Date.now() },
+            { id: genId(), text: '复习激活函数', status: 'done', time: Date.now() - 86400000 }
+        ];
+        if (!localStorage.getItem(storageKey('tasks'))) saveToStorage('tasks', tasks);
+
+        // 代码片段
+        stored = localStorage.getItem(storageKey('snippets'));
+        snippets = stored ? JSON.parse(stored) : [
+            { id: genId(), title: '简单CNN模型', code: 'import torch.nn as nn\n\nclass SimpleCNN(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.conv = nn.Conv2d(3,16,3)\n        self.fc = nn.Linear(16*13*13, 10)\n    def forward(self,x):\n        return self.fc(self.conv(x).flatten(1))', lang: 'python', time: Date.now() }
+        ];
+        if (!localStorage.getItem(storageKey('snippets'))) saveToStorage('snippets', snippets);
+
+        // 资源
+        stored = localStorage.getItem(storageKey('resources'));
+        resources = stored ? JSON.parse(stored) : [
+            { id: genId(), title: '吴恩达深度学习专项课程', url: 'https://www.coursera.org/specializations/deep-learning', category: '课程', time: Date.now() },
+            { id: genId(), title: 'PyTorch 官方文档', url: 'https://pytorch.org/docs/stable/', category: '工具', time: Date.now() - 86400000 }
+        ];
+        if (!localStorage.getItem(storageKey('resources'))) saveToStorage('resources', resources);
+
+        // 番茄钟数据
+        stored = localStorage.getItem(storageKey('pomoData'));
         if (stored) {
-            allNotes = JSON.parse(stored);
+            pomoData = JSON.parse(stored);
+            let today = new Date().toDateString();
+            if (pomoData.date !== today) { pomoData = { count: 0, minutes: 0, log: [], date: today }; }
         } else {
-            allNotes = [
-                { content: '深度学习是机器学习的子集，基于神经网络。', time: Date.now() - 2*86400000 },
-                { content: 'CNN卷积神经网络：卷积层、池化层、全连接层。', time: Date.now() - 86400000 },
-                { content: '反向传播是训练神经网络的核心算法。', time: Date.now() }
-            ];
-            saveData();
+            pomoData = { count: 0, minutes: 0, log: [], date: new Date().toDateString() };
         }
-        if (allNotes.length > 0) {
-            currentIndex = 0;
-            document.getElementById('noteContent').value = allNotes[0].content;
-        }
+
+        // 初始化界面
+        if (allNotes.length > 0) { currentNoteIndex = 0; showNoteInEditor(); }
+        if (snippets.length > 0) { currentSnippetIdx = 0; showSnippetInEditor(); }
+        if (resources.length > 0) { currentResIdx = 0; }
         refreshNotesList();
+        refreshKanban();
+        refreshSnippetsList();
+        refreshResourcesList();
+        refreshPomoDisplay();
         updateChart();
     }
 
-    function saveData() {
-        let key = 'notes_' + currentUser.id;
-        localStorage.setItem(key, JSON.stringify(allNotes));
+    function saveToStorage(prefix, data) {
+        localStorage.setItem(storageKey(prefix), JSON.stringify(data));
+    }
+
+    function genId() { return Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
+
+    // ==================== 笔记管理 ====================
+    function showNoteInEditor() {
+        if (currentNoteIndex >= 0 && allNotes[currentNoteIndex]) {
+            document.getElementById('noteTitle').value = allNotes[currentNoteIndex].title || '';
+            document.getElementById('noteContent').value = allNotes[currentNoteIndex].content || '';
+        }
+    }
+
+    function newNote() {
+        currentNoteIndex = -1;
+        document.getElementById('noteTitle').value = '';
+        document.getElementById('noteContent').value = '';
     }
 
     function saveNote() {
+        let title = document.getElementById('noteTitle').value.trim();
         let content = document.getElementById('noteContent').value;
         if (!content.trim()) { alert('请写点内容'); return; }
-        if (currentIndex >= 0 && allNotes[currentIndex]) {
-            allNotes[currentIndex].content = content;
-            allNotes[currentIndex].time = Date.now();
+        if (!title) title = '未命名笔记';
+        if (currentNoteIndex >= 0 && allNotes[currentNoteIndex]) {
+            allNotes[currentNoteIndex].title = title;
+            allNotes[currentNoteIndex].content = content;
+            allNotes[currentNoteIndex].time = Date.now();
         } else {
-            allNotes.unshift({ content: content, time: Date.now() });
-            currentIndex = 0;
+            allNotes.unshift({ id: genId(), title: title, content: content, time: Date.now() });
+            currentNoteIndex = 0;
         }
-        saveData();
+        saveToStorage('notes', allNotes);
         refreshNotesList();
-        updateChart();
+        updateStatsCards();
         alert('✅ 笔记已保存到云端');
     }
 
     function deleteNote() {
         if (allNotes.length === 0) return;
         if (confirm('删除这篇笔记？')) {
-            allNotes.splice(currentIndex, 1);
-            saveData();
-            if (allNotes.length > 0) {
-                currentIndex = 0;
-                document.getElementById('noteContent').value = allNotes[0].content;
-            } else {
-                currentIndex = -1;
-                document.getElementById('noteContent').value = '';
-            }
+            allNotes.splice(currentNoteIndex, 1);
+            saveToStorage('notes', allNotes);
+            currentNoteIndex = allNotes.length > 0 ? 0 : -1;
+            if (currentNoteIndex >= 0) showNoteInEditor();
+            else { document.getElementById('noteTitle').value = ''; document.getElementById('noteContent').value = ''; }
             refreshNotesList();
-            updateChart();
+            updateStatsCards();
         }
     }
 
     function refreshNotesList() {
-        let container = document.getElementById('notesList');
-        container.innerHTML = '';
-        for (let i = 0; i < allNotes.length; i++) {
-            let note = allNotes[i];
+        let c = document.getElementById('notesList');
+        c.innerHTML = '';
+        allNotes.forEach((note, i) => {
             let div = document.createElement('div');
-            div.className = 'note-item';
-            let preview = note.content.substring(0, 40) + (note.content.length > 40 ? '...' : '');
-            div.innerHTML = '<div><b>📄 笔记' + (i+1) + '</b><br>' + preview + '</div>';
-            div.onclick = (function(idx) {
-                return function() {
-                    currentIndex = idx;
-                    document.getElementById('noteContent').value = allNotes[idx].content;
-                };
-            })(i);
-            container.appendChild(div);
-        }
+            div.className = 'list-item';
+            div.innerHTML = '<div class="item-title">📄 ' + (note.title || '笔记' + (i+1)) + '</div>'
+                + '<div class="item-preview">' + note.content.substring(0, 40) + (note.content.length>40?'...':'') + '</div>'
+                + '<div class="item-meta">' + new Date(note.time).toLocaleString() + '</div>';
+            div.onclick = () => { currentNoteIndex = i; showNoteInEditor(); };
+            c.appendChild(div);
+        });
     }
 
+    // ==================== 智能客服 ====================
     function ask() {
         let input = document.getElementById('question');
         let q = input.value.trim();
         if (!q) return;
-        
         let chatArea = document.getElementById('chatArea');
-        let userDiv = document.createElement('div');
-        userDiv.className = 'chat-msg user-msg';
-        userDiv.innerText = '👤 ' + q;
-        chatArea.appendChild(userDiv);
-        
-        let answer = getAnswer(q);
-        let botDiv = document.createElement('div');
-        botDiv.className = 'chat-msg bot-msg';
-        botDiv.innerText = '🤖 ' + answer;
-        chatArea.appendChild(botDiv);
-        
+        let ud = document.createElement('div'); ud.className = 'chat-msg user-msg'; ud.innerText = '👤 ' + q;
+        chatArea.appendChild(ud);
+        let bd = document.createElement('div'); bd.className = 'chat-msg bot-msg'; bd.innerText = '🤖 ' + getAnswer(q);
+        chatArea.appendChild(bd);
         chatArea.scrollTop = chatArea.scrollHeight;
         input.value = '';
     }
 
     function getAnswer(q) {
         q = q.toLowerCase();
-        
-        // ========== 深度学习/DL 相关 ==========
-        if (q.includes('cnn') || q.includes('卷积')) return 'CNN（卷积神经网络）擅长处理图像数据，核心操作：卷积提取特征、池化降维、全连接分类。常用于人脸识别、物体检测。';
-        if (q.includes('rnn') || q.includes('循环')) return 'RNN（循环神经网络）适合序列数据，如文本、音频、时间序列。常用LSTM和GRU解决梯度消失问题。';
-        if (q.includes('反向传播') || q.includes('backprop')) return '反向传播是训练神经网络的核心算法，通过链式法则计算损失函数对每个权重的梯度，然后更新参数。';
-        if (q.includes('过拟合')) return '过拟合是模型在训练集上表现太好，但测试集差。解决方案：增加数据量、数据增强、Dropout、早停、L1/L2正则化。';
-        if (q.includes('梯度下降')) return '梯度下降是一种优化算法，沿着损失函数梯度的反方向更新参数，逐步找到最小值。常见变体：SGD、Adam、RMSprop。';
-        if (q.includes('激活函数')) return '常用激活函数：ReLU（最常用，解决梯度消失）、Sigmoid（输出0-1，用于二分类）、Tanh（输出-1到1）、Softmax（多分类）。';
-        if (q.includes('损失函数') || q.includes('loss')) return '常用损失函数：MSE（回归问题）、交叉熵（分类问题）、MAE（对异常值鲁棒）。';
-        if (q.includes('transformer')) return 'Transformer是当前最先进的深度学习架构，基于自注意力机制，用于GPT、BERT等大模型。适合自然语言处理。';
-        if (q.includes('lstm')) return 'LSTM（长短期记忆网络）是RNN的改进版，通过门控机制解决长序列的梯度消失问题，适合时间序列预测。';
-        if (q.includes('dropout')) return 'Dropout是一种正则化技术，训练时随机丢弃一部分神经元，防止过拟合，提升模型泛化能力。';
-        if (q.includes('学习率')) return '学习率控制参数更新的步长。太大会震荡不收敛，太小收敛太慢。常用学习率调度或Adam自适应学习率。';
-        if (q.includes('神经网络')) return '神经网络由输入层、隐藏层、输出层组成，通过神经元连接和激活函数实现非线性映射，是深度学习的核心架构。';
-        
-        // ========== 数据挖掘相关 ==========
-        if (q.includes('数据挖掘')) return '数据挖掘是从大量数据中发现隐藏模式的过程。常用方法：聚类（K-means）、分类（决策树）、关联规则（Apriori）、异常检测。';
-        if (q.includes('聚类')) return '聚类是无监督学习，将相似数据分组。常见算法：K-means、DBSCAN、层次聚类。用于客户分群、图像分割。';
-        if (q.includes('分类') && !q.includes('神经网络')) return '分类是监督学习，预测离散标签。常用算法：逻辑回归、决策树、随机森林、SVM、神经网络。';
-        if (q.includes('关联规则')) return '关联规则发现数据项之间的关联关系。经典案例：啤酒与尿布。常用算法：Apriori、FP-Growth。';
-        if (q.includes('决策树')) return '决策树是一种可解释的分类/回归算法，通过特征分裂构建树结构。优点：可视化、不需要特征缩放。';
-        if (q.includes('随机森林')) return '随机森林是集成学习算法，通过多棵决策树投票提高准确率，防止过拟合。';
-        if (q.includes('svm') || q.includes('支持向量机')) return 'SVM（支持向量机）通过寻找最大间隔超平面进行分类，适合小样本高维数据，核函数可处理非线性问题。';
-        
-        // ========== 编程/工具相关 ==========
-        if (q.includes('python') && (q.includes('库') || q.includes('package'))) return '常用深度学习库：PyTorch（灵活）、TensorFlow（生产部署）、Keras（简单易用）、JAX（高性能）。';
-        if (q.includes('pytorch')) return 'PyTorch是Facebook开发的深度学习框架，动态计算图，适合研究和快速原型开发。';
-        if (q.includes('tensorflow')) return 'TensorFlow是Google开发的深度学习框架，支持静态图和动态图，适合大规模生产部署。';
-        if (q.includes('pandas')) return 'Pandas是Python数据分析库，提供DataFrame数据结构，用于数据清洗、转换、聚合。';
-        if (q.includes('numpy')) return 'NumPy是Python数值计算基础库，提供多维数组和矩阵运算，是Pandas、PyTorch的基础。';
-        if (q.includes('matplotlib')) return 'Matplotlib是Python可视化库，可以画折线图、散点图、柱状图、热力图等。';
-        if (q.includes('sklearn') || q.includes('scikit-learn')) return 'Scikit-learn是Python机器学习库，包含分类、回归、聚类、降维等经典算法。';
-        
-        // ========== 统计学相关 ==========
-        if (q.includes('p值') || q.includes('p值')) return 'P值是假设检验中，在原假设成立下，观察到当前结果或更极端结果的概率。P < 0.05通常认为显著。';
-        if (q.includes('t检验')) return 'T检验用于比较两组均值是否有显著差异。包括单样本t检验、独立样本t检验、配对t检验。';
-        if (q.includes('方差分析') || q.includes('anova')) return 'ANOVA（方差分析）用于比较三个及以上组的均值差异。常见：单因素ANOVA、双因素ANOVA。';
-        if (q.includes('回归分析')) return '回归分析研究变量间的关系。线性回归、逻辑回归、岭回归、Lasso回归。用于预测和推断。';
-        if (q.includes('正态分布')) return '正态分布是钟形曲线，均值=中位数=众数。很多统计方法假设数据正态分布。中心极限定理说样本均值趋向正态。';
-        if (q.includes('置信区间')) return '置信区间是总体参数可能落入的范围。例如95%置信区间表示重复抽样100次，95次包含真实值。';
-        if (q.includes('贝叶斯')) return '贝叶斯统计利用先验知识更新后验概率。公式：P(A|B)=P(B|A)P(A)/P(B)。用于朴素贝叶斯分类。';
-        if (q.includes('相关系数')) return '相关系数衡量两个变量的线性关系。皮尔逊相关系数（-1到1），绝对值越大相关性越强。';
-        if (q.includes('假设检验')) return '假设检验是先提出原假设，然后通过样本数据判断是否拒绝原假设。包括t检验、卡方检验、F检验等。';
-        if (q.includes('卡方检验')) return '卡方检验用于检验两个分类变量是否独立，或者实际分布与理论分布是否有显著差异。';
-        
-        // ========== 通用知识问答 ==========
-        if (q.includes('你好') || q.includes('您好')) return '你好！我是智能助手，可以问深度学习、数据挖掘、统计学、编程等问题。';
-        if (q.includes('谢谢') || q.includes('感谢')) return '不客气！有问题随时问我~';
-        if (q.includes('你是谁') || q.includes('你叫什么')) return '我是Deep Learner Hub智能助手，可以帮你解答深度学习、数据挖掘、统计学相关问题。';
-        if (q.includes('天气') || q.includes('温度')) return '我是知识问答助手，无法查询实时天气。建议打开天气App或网站查看~';
-        if (q.includes('时间') || q.includes('几点')) return '请查看你的设备时间哦！我是离线助手，无法获取实时时间。';
-        if (q.includes('笑话')) return '🤖 问：为什么神经网络不谈恋爱？答：因为它总在过拟合，忘不了前任！';
-        if (q.includes('帮助') || q.includes('help')) return '你可以问我：CNN、RNN、反向传播、过拟合、数据挖掘、聚类、P值、t检验、Python、PyTorch等问题！';
-        if (q.includes('可以问什么') || q.includes('能问什么')) return '我可以回答：深度学习（CNN、RNN、Transformer）、数据挖掘（聚类、分类）、统计学（P值、回归分析）、编程（Python、PyTorch）。随便问！';
-        
-        // ========== 默认回答 ==========
-        return '🤖 我可以回答：深度学习（CNN、RNN、Transformer）、数据挖掘（聚类、分类）、统计学（P值、回归分析）、编程（Python、PyTorch）。换个具体问题试试？';
+        // 深度学习
+        if (q.includes('cnn') || q.includes('卷积')) return 'CNN（卷积神经网络）擅长处理图像数据，核心操作：卷积提取特征、池化降维、全连接分类。';
+        if (q.includes('rnn') || q.includes('循环')) return 'RNN适合序列数据，如文本、音频、时间序列。常用LSTM和GRU解决梯度消失。';
+        if (q.includes('反向传播') || q.includes('backprop')) return '反向传播通过链式法则计算损失对权重的梯度，更新参数。';
+        if (q.includes('过拟合')) return '过拟合：模型记住了训练数据但泛化差。解决：数据增强、Dropout、正则化、早停。';
+        if (q.includes('梯度下降')) return '梯度下降沿负梯度方向更新参数。变体：SGD、Adam、RMSprop。';
+        if (q.includes('激活函数')) return '常用激活函数：ReLU（最常用）、Sigmoid（二分类）、Tanh、Softmax（多分类）。';
+        if (q.includes('损失函数') || q.includes('loss')) return '损失函数：MSE（回归）、交叉熵（分类）、MAE（鲁棒）。';
+        if (q.includes('transformer')) return 'Transformer基于自注意力机制，是GPT、BERT等大模型的基础架构。';
+        if (q.includes('lstm')) return 'LSTM通过门控机制解决长序列梯度消失，适合时间序列预测。';
+        if (q.includes('dropout')) return 'Dropout训练时随机丢弃神经元，防止过拟合，提升泛化能力。';
+        if (q.includes('学习率')) return '学习率控制更新步长。太大震荡，太小太慢。常用Adam自适应学习率。';
+        if (q.includes('神经网络')) return '神经网络由输入层、隐藏层、输出层组成，通过激活函数实现非线性映射。';
+        // 数据挖掘
+        if (q.includes('数据挖掘')) return '数据挖掘从数据中发现模式。方法：聚类（K-means）、分类（决策树）、关联规则（Apriori）。';
+        if (q.includes('聚类')) return '聚类将相似数据分组。算法：K-means、DBSCAN、层次聚类。';
+        if (q.includes('关联规则')) return '关联规则发现数据关联。经典：啤酒与尿布。算法：Apriori、FP-Growth。';
+        if (q.includes('决策树')) return '决策树是可解释的分类/回归算法，通过特征分裂构建树结构。';
+        if (q.includes('随机森林')) return '随机森林用多棵决策树投票，提高准确率，防止过拟合。';
+        if (q.includes('svm')) return 'SVM寻找最大间隔超平面分类，核函数处理非线性问题。';
+        // 编程工具
+        if (q.includes('pytorch')) return 'PyTorch是Facebook开发的深度学习框架，动态计算图，适合研究。';
+        if (q.includes('tensorflow')) return 'TensorFlow是Google的深度学习框架，适合大规模生产部署。';
+        if (q.includes('pandas')) return 'Pandas提供DataFrame结构，用于数据清洗、转换、聚合分析。';
+        if (q.includes('numpy')) return 'NumPy提供多维数组和矩阵运算，是Python数据科学的基础。';
+        if (q.includes('sklearn') || q.includes('scikit')) return 'Scikit-learn包含分类、回归、聚类等经典机器学习算法。';
+        // 统计学
+        if (q.includes('p值')) return 'P值是原假设成立时观察到当前结果的概率。P<0.05通常显著。';
+        if (q.includes('t检验')) return 'T检验比较两组均值差异。单样本/独立样本/配对t检验。';
+        if (q.includes('方差分析') || q.includes('anova')) return 'ANOVA比较三组及以上均值差异。单因素/双因素ANOVA。';
+        if (q.includes('正态分布')) return '正态分布是钟形曲线。中心极限定理：样本均值趋向正态分布。';
+        if (q.includes('贝叶斯')) return '贝叶斯统计：P(A|B)=P(B|A)P(A)/P(B)。用于朴素贝叶斯分类。';
+        if (q.includes('假设检验')) return '假设检验通过样本判断是否拒绝原假设。t检验、卡方检验等。';
+        // 通用
+        if (q.includes('笑话')) return '🤖 为什么神经网络不谈恋爱？因为它总在过拟合，忘不了前任！';
+        return '我可以回答：深度学习（CNN/RNN/Transformer）、数据挖掘（聚类/分类）、统计学（P值/回归）、编程（PyTorch/Pandas）。换个问题试试？';
+    }
+
+    // ==================== 学习看板 ====================
+    function addTask() {
+        let input = document.getElementById('newTaskInput');
+        let text = input.value.trim();
+        if (!text) { alert('请输入任务内容'); return; }
+        tasks.push({ id: genId(), text: text, status: 'todo', time: Date.now() });
+        saveToStorage('tasks', tasks);
+        input.value = '';
+        refreshKanban();
+        updateStatsCards();
+    }
+
+    function moveTask(taskId, toStatus) {
+        let task = tasks.find(t => t.id === taskId);
+        if (task) task.status = toStatus;
+        saveToStorage('tasks', tasks);
+        refreshKanban();
+    }
+
+    function deleteTask(taskId) {
+        if (!confirm('删除这个任务？')) return;
+        tasks = tasks.filter(t => t.id !== taskId);
+        saveToStorage('tasks', tasks);
+        refreshKanban();
+        updateStatsCards();
+    }
+
+    function refreshKanban() {
+        renderKanbanCol('todoList', 'todo');
+        renderKanbanCol('doingList', 'doing');
+        renderKanbanCol('doneList', 'done');
+        document.getElementById('todoCount').innerText = tasks.filter(t => t.status === 'todo').length;
+        document.getElementById('doingCount').innerText = tasks.filter(t => t.status === 'doing').length;
+        document.getElementById('doneCount').innerText = tasks.filter(t => t.status === 'done').length;
+    }
+
+    function renderKanbanCol(containerId, status) {
+        let c = document.getElementById(containerId);
+        c.innerHTML = '';
+        tasks.filter(t => t.status === status).forEach(t => {
+            let div = document.createElement('div');
+            div.className = 'kanban-task ' + (status === 'done' ? 'done' : '');
+            div.innerHTML = '<span>' + t.text + '</span>'
+                + '<span class="task-actions">'
+                + (status !== 'todo' ? '<button class="small" onclick="moveTask(\''+t.id+'\',\'todo\')">←</button>' : '')
+                + (status !== 'doing' ? '<button class="small success" onclick="moveTask(\''+t.id+'\',\'doing\')">▶</button>' : '')
+                + (status !== 'done' ? '<button class="small success" onclick="moveTask(\''+t.id+'\',\'done\')">✓</button>' : '')
+                + '<button class="small danger" onclick="deleteTask(\''+t.id+'\')">✕</button>'
+                + '</span>';
+            c.appendChild(div);
+        });
+    }
+
+    // ==================== 代码片段 ====================
+    function showSnippetInEditor() {
+        if (currentSnippetIdx >= 0 && snippets[currentSnippetIdx]) {
+            let s = snippets[currentSnippetIdx];
+            document.getElementById('snippetTitle').value = s.title || '';
+            document.getElementById('snippetCode').value = s.code || '';
+            document.getElementById('snippetLang').value = s.lang || 'python';
+        }
+    }
+
+    function saveSnippet() {
+        let title = document.getElementById('snippetTitle').value.trim();
+        let code = document.getElementById('snippetCode').value;
+        let lang = document.getElementById('snippetLang').value;
+        if (!title) title = '未命名片段';
+        if (!code.trim()) { alert('请输入代码'); return; }
+        if (currentSnippetIdx >= 0 && snippets[currentSnippetIdx]) {
+            snippets[currentSnippetIdx].title = title;
+            snippets[currentSnippetIdx].code = code;
+            snippets[currentSnippetIdx].lang = lang;
+            snippets[currentSnippetIdx].time = Date.now();
+        } else {
+            snippets.unshift({ id: genId(), title: title, code: code, lang: lang, time: Date.now() });
+            currentSnippetIdx = 0;
+        }
+        saveToStorage('snippets', snippets);
+        refreshSnippetsList();
+        updateStatsCards();
+        alert('✅ 代码片段已保存');
+    }
+
+    function deleteSnippet() {
+        if (snippets.length === 0) return;
+        if (confirm('删除这个代码片段？')) {
+            snippets.splice(currentSnippetIdx, 1);
+            saveToStorage('snippets', snippets);
+            currentSnippetIdx = snippets.length > 0 ? 0 : -1;
+            if (currentSnippetIdx >= 0) showSnippetInEditor();
+            else { document.getElementById('snippetTitle').value=''; document.getElementById('snippetCode').value=''; }
+            refreshSnippetsList();
+            updateStatsCards();
+        }
+    }
+
+    function refreshSnippetsList() {
+        let c = document.getElementById('snippetsList');
+        c.innerHTML = '';
+        let langLabels = { python: 'py', javascript: 'js', other: 'other' };
+        let langClass = { python: 'lang-py', javascript: 'lang-js', other: 'lang-other' };
+        snippets.forEach((s, i) => {
+            let div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = '<div class="item-title"><span class="lang-badge '+(langClass[s.lang]||'lang-other')+'">'+(langLabels[s.lang]||s.lang)+'</span> ' + s.title + '</div>'
+                + '<div class="code-preview">' + s.code.substring(0, 100) + (s.code.length>100?'...':'') + '</div>'
+                + '<div class="item-meta">' + new Date(s.time).toLocaleString() + '</div>';
+            div.onclick = () => { currentSnippetIdx = i; showSnippetInEditor(); };
+            c.appendChild(div);
+        });
+    }
+
+    // ==================== 番茄钟 ====================
+    function setTimerMode(mode) {
+        pauseTimer();
+        timerMode = mode;
+        timerSeconds = mode === 'work' ? 25 * 60 : 5 * 60;
+        updateTimerDisplay();
+        document.getElementById('timerCircle').classList.toggle('break', mode === 'break');
+    }
+
+    function startTimer() {
+        if (timerRunning) return;
+        timerRunning = true;
+        document.getElementById('btnStart').style.display = 'none';
+        document.getElementById('btnPause').style.display = 'inline-block';
+        timerInterval = setInterval(() => {
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                document.getElementById('btnStart').style.display = 'inline-block';
+                document.getElementById('btnPause').style.display = 'none';
+                if (timerMode === 'work') {
+                    pomoData.count++;
+                    pomoData.minutes += 25;
+                    pomoData.log.unshift('🍅 ' + new Date().toLocaleTimeString() + ' 完成一个番茄');
+                }
+                pomoData.date = new Date().toDateString();
+                saveToStorage('pomoData', pomoData);
+                refreshPomoDisplay();
+                alert(timerMode === 'work' ? '🍅 番茄完成！休息一下吧~' : '☕ 休息结束！开始新的番茄吧~');
+                return;
+            }
+            timerSeconds--;
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('btnStart').style.display = 'inline-block';
+        document.getElementById('btnPause').style.display = 'none';
+    }
+
+    function resetTimer() {
+        pauseTimer();
+        timerSeconds = timerMode === 'work' ? 25 * 60 : 5 * 60;
+        updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+        let m = Math.floor(timerSeconds / 60);
+        let s = timerSeconds % 60;
+        document.getElementById('timerText').innerText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    function refreshPomoDisplay() {
+        document.getElementById('pomoCount').innerText = pomoData.count;
+        document.getElementById('studyMinutes').innerText = pomoData.minutes;
+        // 连续天数（简化：只要有记录就算）
+        let stored = localStorage.getItem(storageKey('pomoDaily'));
+        let dailyLog = stored ? JSON.parse(stored) : [];
+        let today = new Date().toDateString();
+        if (!dailyLog.includes(today) && pomoData.count > 0) {
+            dailyLog.push(today);
+            saveToStorage('pomoDaily', dailyLog);
+        }
+        let streak = 0;
+        let check = new Date();
+        for (let i = 0; i < 365; i++) {
+            if (dailyLog.includes(check.toDateString())) { streak++; check.setDate(check.getDate()-1); }
+            else break;
+        }
+        document.getElementById('streakDays').innerText = streak;
+        // 日志
+        let logEl = document.getElementById('pomoLog');
+        logEl.innerHTML = pomoData.log.length === 0 ? '<div style="color:#999;">今天还没有番茄记录~</div>'
+            : pomoData.log.map(l => '<div style="padding:4px 0;border-bottom:1px solid #eee;">'+l+'</div>').join('');
+    }
+
+    // ==================== 知识资源 ====================
+    function saveResource() {
+        let title = document.getElementById('resTitle').value.trim();
+        let url = document.getElementById('resUrl').value.trim();
+        let category = document.getElementById('resCategory').value;
+        if (!title) { alert('请输入资源名称'); return; }
+        if (!url) { alert('请输入资源链接'); return; }
+        if (currentResIdx >= 0 && resources[currentResIdx]) {
+            resources[currentResIdx].title = title;
+            resources[currentResIdx].url = url;
+            resources[currentResIdx].category = category;
+            resources[currentResIdx].time = Date.now();
+        } else {
+            resources.unshift({ id: genId(), title: title, url: url, category: category, time: Date.now() });
+            currentResIdx = 0;
+        }
+        saveToStorage('resources', resources);
+        refreshResourcesList();
+        updateStatsCards();
+        alert('✅ 资源已收藏');
+    }
+
+    function deleteResource() {
+        if (resources.length === 0) return;
+        if (confirm('删除这个资源？')) {
+            resources.splice(currentResIdx, 1);
+            saveToStorage('resources', resources);
+            currentResIdx = resources.length > 0 ? 0 : -1;
+            refreshResourcesList();
+            updateStatsCards();
+        }
+    }
+
+    function filterResources(cat) {
+        resourceFilter = cat;
+        refreshResourcesList();
+    }
+
+    function refreshResourcesList() {
+        let c = document.getElementById('resourcesList');
+        c.innerHTML = '';
+        let filtered = resourceFilter === '全部' ? resources : resources.filter(r => r.category === resourceFilter);
+        if (filtered.length === 0) { c.innerHTML = '<div style="color:#999;text-align:center;padding:20px;">暂无资源</div>'; return; }
+        filtered.forEach((r, i) => {
+            let globalIdx = resources.indexOf(r);
+            let div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = '<div class="item-title">🔗 ' + r.title + ' <span class="keyword-tag">' + r.category + '</span></div>'
+                + '<div class="item-preview">' + r.url.substring(0, 60) + (r.url.length>60?'...':'') + '</div>'
+                + '<div class="item-meta">' + new Date(r.time).toLocaleString() + '</div>';
+            div.onclick = () => {
+                currentResIdx = globalIdx;
+                document.getElementById('resTitle').value = r.title;
+                document.getElementById('resUrl').value = r.url;
+                document.getElementById('resCategory').value = r.category;
+            };
+            c.appendChild(div);
+        });
+    }
+
+    // ==================== 数据统计 ====================
+    function updateStatsCards() {
+        document.getElementById('statTotalNotes').innerText = allNotes.length;
+        document.getElementById('statTotalTasks').innerText = tasks.length;
+        document.getElementById('statTotalSnippets').innerText = snippets.length;
+        document.getElementById('statTotalResources').innerText = resources.length;
     }
 
     function updateChart() {
-        let now = Date.now();
-        let day = 86400000;
-        let labels = [];
-        let counts = [];
+        let now = Date.now(), day = 86400000;
+        let labels = [], counts = [];
         for (let i = 6; i >= 0; i--) {
             let start = now - i * day;
-            let d = new Date(start).toLocaleDateString();
-            labels.push(d);
-            let cnt = 0;
-            for (let note of allNotes) {
-                if (note.time >= start && note.time < start + day) cnt++;
-            }
-            counts.push(cnt);
+            labels.push(new Date(start).toLocaleDateString());
+            counts.push(allNotes.filter(n => n.time >= start && n.time < start + day).length);
         }
         let ctx = document.getElementById('myChart').getContext('2d');
         if (chartObj) chartObj.destroy();
         chartObj = new Chart(ctx, {
             type: 'bar',
-            data: { labels: labels, datasets: [{ label: '笔记数量', data: counts, backgroundColor: '#667eea' }] }
+            data: { labels, datasets: [{ label: '笔记数量', data: counts, backgroundColor: '#667eea', borderRadius: 6 }] },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
         });
     }
+
+    function updateTaskChart() {
+        let todoN = tasks.filter(t => t.status === 'todo').length;
+        let doingN = tasks.filter(t => t.status === 'doing').length;
+        let doneN = tasks.filter(t => t.status === 'done').length;
+        let ctx = document.getElementById('taskChart').getContext('2d');
+        if (taskChartObj) taskChartObj.destroy();
+        taskChartObj = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['待办', '进行中', '已完成'],
+                datasets: [{
+                    data: [todoN, doingN, doneN],
+                    backgroundColor: ['#f59e0b', '#667eea', '#10b981'],
+                    borderRadius: 4
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // 初始化
+    window.onload = function() { updateStatsCards(); };
 </script>
 </body>
 </html>
