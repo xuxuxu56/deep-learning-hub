@@ -154,6 +154,19 @@
         .timer-stat .num { font-size: 24px; font-weight: bold; color: #667eea; }
         .timer-stat .label { font-size: 11px; color: #999; }
 
+        /* ====== 代码运行输出 ====== */
+        .code-output {
+            background: #1e1e1e; color: #4ec9b0; padding: 10px 12px; border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;
+            min-height: 60px; max-height: 200px; overflow-y: auto;
+            white-space: pre-wrap; word-break: break-all; margin-top: 8px;
+            display: none;
+        }
+        .code-output.show { display: block; }
+        .code-output .output-label { color: #888; margin-bottom: 4px; }
+        .code-output .output-error { color: #f44747; }
+        .code-output .output-loading { color: #dcdcaa; font-style: italic; }
+
         /* ====== 代码片段 ====== */
         .code-preview {
             background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px;
@@ -189,6 +202,8 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt-dist@1.2.0/skulpt-stdlib.js"></script>
 </head>
 <body>
 <div class="container">
@@ -306,11 +321,13 @@
                             <option value="javascript">JavaScript</option>
                             <option value="other">其他</option>
                         </select>
-                        <textarea id="snippetCode" placeholder="粘贴代码...&#10;&#10;例如：&#10;import torch&#10;model = torch.nn.Sequential(...)"></textarea>
+                        <textarea id="snippetCode" placeholder="写代码...&#10;&#10;Python 示例：&#10;for i in range(5):&#10;    print(f'Epoch {i+1}: loss={0.1*(5-i):.2f}')&#10;&#10;JS 示例：&#10;console.log('Hello!');"></textarea>
                         <div>
                             <button onclick="saveSnippet()">💾 保存片段</button>
+                            <button class="success" onclick="runSnippet()">▶ 运行</button>
                             <button class="danger" onclick="deleteSnippet()">🗑️ 删除选中</button>
                         </div>
+                        <div id="codeOutput" class="code-output"></div>
                     </div>
                 </div>
                 <div class="col">
@@ -523,7 +540,8 @@
         // 代码片段
         stored = localStorage.getItem(storageKey('snippets'));
         snippets = stored ? JSON.parse(stored) : [
-            { id: genId(), title: '简单CNN模型', code: 'import torch.nn as nn\n\nclass SimpleCNN(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.conv = nn.Conv2d(3,16,3)\n        self.fc = nn.Linear(16*13*13, 10)\n    def forward(self,x):\n        return self.fc(self.conv(x).flatten(1))', lang: 'python', time: Date.now() }
+            { id: genId(), title: '训练循环模拟', code: 'import random\n\nlosses = []\nfor epoch in range(3):\n    loss = round(random.uniform(0.8, 0.1), 4)\n    losses.append(loss)\n    print(f"Epoch {epoch+1}: loss={loss}")\n\nprint(f"\\n最低 loss: {min(losses)}")', lang: 'python', time: Date.now() - 3600000 },
+            { id: genId(), title: 'Hello World', code: '// JavaScript 示例\nconsole.log("Hello, Deep Learner!");\nlet x = [1, 2, 3].map(n => n * 2);\nconsole.log("x:", x);\nconsole.log("sum:", x.reduce((a, b) => a + b, 0));', lang: 'javascript', time: Date.now() }
         ];
         if (!localStorage.getItem(storageKey('snippets'))) saveToStorage('snippets', snippets);
 
@@ -730,8 +748,84 @@
         });
     }
 
+    // ==================== 代码运行引擎 ====================
+    function runJS(code) {
+        let output = [];
+        let origLog = console.log;
+        console.log = function() {
+            let args = Array.from(arguments).map(function(a) {
+                if (a === null) return 'null';
+                if (a === undefined) return 'undefined';
+                if (typeof a === 'object') {
+                    try { return JSON.stringify(a, null, 2); } catch(e) { return String(a); }
+                }
+                return String(a);
+            });
+            output.push(args.join(' '));
+        };
+        try {
+            let result = eval(code);
+            if (result !== undefined) {
+                output.push('=> ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)));
+            }
+        } catch (e) {
+            output.push('Error: ' + e.message);
+        }
+        console.log = origLog;
+        return output.length > 0 ? output.join('\n') : '代码执行成功（无输出）';
+    }
+
+    function runPython(code) {
+        return new Promise(function(resolve) {
+            let output = [];
+            Sk.configure({
+                output: function(text) { output.push(text); },
+                read: function(x) {
+                    if (Sk.builtinFiles && Sk.builtinFiles['files'][x]) {
+                        return Sk.builtinFiles['files'][x];
+                    }
+                    throw 'File not found: ' + x;
+                }
+            });
+            Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody('<stdin>', false, code, true);
+            }).then(
+                function() { resolve(output.join('') || '代码执行成功（无输出）'); },
+                function(e) { resolve('Error: ' + (e.toString ? e.toString() : String(e))); }
+            );
+        });
+    }
+
+    function runSnippet() {
+        let code = document.getElementById('snippetCode').value;
+        let lang = document.getElementById('snippetLang').value;
+        let out = document.getElementById('codeOutput');
+        if (!code.trim()) { out.className = 'code-output show'; out.innerHTML = '<div class="output-error">⚠️ 请先输入代码</div>'; return; }
+        out.className = 'code-output show';
+        if (lang === 'javascript') {
+            out.innerHTML = '<div class="output-label">▶ 运行结果（JavaScript）：</div>';
+            let result = runJS(code);
+            let isErr = result.indexOf('Error:') === 0;
+            out.innerHTML += '<div class="' + (isErr ? 'output-error' : '') + '">' + escapeHtml(result) + '</div>';
+        } else if (lang === 'python') {
+            out.innerHTML = '<div class="output-label">▶ 运行结果（Python）：</div><div class="output-loading">代码运行中...</div>';
+            runPython(code).then(function(result) {
+                let isErr = result.indexOf('Error:') === 0;
+                out.innerHTML = '<div class="output-label">▶ 运行结果（Python）：</div><div class="' + (isErr ? 'output-error' : '') + '">' + escapeHtml(result) + '</div>';
+            });
+        } else {
+            out.innerHTML = '<div class="output-error">⚠️ 其他语言暂不支持在线运行</div>';
+        }
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     // ==================== 代码片段 ====================
     function showSnippetInEditor() {
+        document.getElementById('codeOutput').className = 'code-output';
+        document.getElementById('codeOutput').innerHTML = '';
         if (currentSnippetIdx >= 0 && snippets[currentSnippetIdx]) {
             let s = snippets[currentSnippetIdx];
             document.getElementById('snippetTitle').value = s.title || '';
@@ -784,7 +878,10 @@
             div.className = 'list-item';
             div.innerHTML = '<div class="item-title"><span class="lang-badge '+(langClass[s.lang]||'lang-other')+'">'+(langLabels[s.lang]||s.lang)+'</span> ' + s.title + '</div>'
                 + '<div class="code-preview">' + s.code.substring(0, 100) + (s.code.length>100?'...':'') + '</div>'
-                + '<div class="item-meta">' + new Date(s.time).toLocaleString() + '</div>';
+                + '<div class="item-meta">' + new Date(s.time).toLocaleString()
+                + ' <button class="small success" style="float:right;margin:0;" '
+                + 'onclick="event.stopPropagation();currentSnippetIdx='+i+';showSnippetInEditor();runSnippet()">▶ 运行</button>'
+                + '</div>';
             div.onclick = () => { currentSnippetIdx = i; showSnippetInEditor(); };
             c.appendChild(div);
         });
@@ -876,6 +973,8 @@
         let category = document.getElementById('resCategory').value;
         if (!title) { alert('请输入资源名称'); return; }
         if (!url) { alert('请输入资源链接'); return; }
+        // 自动补全协议
+        if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
         if (currentResIdx >= 0 && resources[currentResIdx]) {
             resources[currentResIdx].title = title;
             resources[currentResIdx].url = url;
@@ -888,6 +987,7 @@
         saveToStorage('resources', resources);
         refreshResourcesList();
         updateStatsCards();
+        document.getElementById('resUrl').value = url;
         alert('✅ 资源已收藏');
     }
 
@@ -916,17 +1016,32 @@
             let globalIdx = resources.indexOf(r);
             let div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = '<div class="item-title">🔗 ' + r.title + ' <span class="keyword-tag">' + r.category + '</span></div>'
-                + '<div class="item-preview">' + r.url.substring(0, 60) + (r.url.length>60?'...':'') + '</div>'
-                + '<div class="item-meta">' + new Date(r.time).toLocaleString() + '</div>';
-            div.onclick = () => {
-                currentResIdx = globalIdx;
-                document.getElementById('resTitle').value = r.title;
-                document.getElementById('resUrl').value = r.url;
-                document.getElementById('resCategory').value = r.category;
-            };
+            let shortUrl = r.url.replace(/^https?:\/\//i, '').substring(0, 45);
+            div.innerHTML = '<div class="item-title">'
+                + '<a href="' + r.url + '" target="_blank" rel="noopener noreferrer" '
+                + 'style="color:#667eea;text-decoration:none;" '
+                + 'onmouseover="this.style.textDecoration=\'underline\'" '
+                + 'onmouseout="this.style.textDecoration=\'none\'">'
+                + '🔗 ' + r.title + ' ↗</a> '
+                + '<span class="keyword-tag">' + r.category + '</span></div>'
+                + '<div class="item-preview" style="color:#888;">' + shortUrl + (r.url.length>45?'...':'') + '</div>'
+                + '<div class="item-meta">' + new Date(r.time).toLocaleString()
+                + ' <button class="small" style="float:right;margin:0;" '
+                + 'onclick="event.stopPropagation();editResource(\'' + globalIdx + '\')">✏️ 编辑</button>'
+                + '</div>';
             c.appendChild(div);
         });
+    }
+
+    function editResource(idx) {
+        currentResIdx = idx;
+        if (resources[idx]) {
+            document.getElementById('resTitle').value = resources[idx].title;
+            document.getElementById('resUrl').value = resources[idx].url;
+            document.getElementById('resCategory').value = resources[idx].category;
+            // 自动滚动到添加表单
+            document.getElementById('resTitle').scrollIntoView({ behavior: 'smooth' });
+        }
     }
 
     // ==================== 数据统计 ====================
